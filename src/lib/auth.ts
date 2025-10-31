@@ -17,8 +17,8 @@ export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
-	// Allow authentication from mobile app (appfinancaspessoais://) and local Expo development server
-	trustedOrigins: ["appfinancaspessoais://", "exp://192.168.0.30:8081"],
+	// Allow authentication from localhost, mobile app (appfinancaspessoais://), and local Expo development server
+	trustedOrigins: ["http://localhost:3000", "appfinancaspessoais://", "exp://192.168.0.30:8081"],
 	// Enable Expo plugin for React Native mobile support
 	plugins: [expo()],
 	// Enable email/password authentication method
