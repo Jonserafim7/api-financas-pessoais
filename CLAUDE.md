@@ -243,11 +243,22 @@ Each user has:
 
 ## Environment Variables
 
-Required in `.env`:
-- `DATABASE_URL`: PostgreSQL connection string (used by Prisma & Better Auth)
-- `PORT`: Server port (default 3000)
+Required in `.env` (copy from `.env.example`):
 
-Better Auth reads DATABASE_URL from Prisma config (`prisma.config.ts`).
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | ✅ | PostgreSQL connection string for Prisma & Better Auth (`postgresql://user:password@host:port/db?schema=public`) |
+| `BETTER_AUTH_SECRET` | ✅ | Secret key for signing Better Auth tokens. Generate random: `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | ✅ | Base URL of your application (`http://localhost:3000` in dev, production URL in prod) |
+| `PORT` | ❌ | Server port (default: 3000) |
+
+**Setup**:
+```bash
+cp .env.example .env
+# Edit .env with your values
+```
+
+**Note**: Better Auth reads `DATABASE_URL` from Prisma config (`prisma.config.ts`).
 
 ## Testing
 

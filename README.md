@@ -1,98 +1,311 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API Finanças Pessoais
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A personal finance management REST API built with NestJS. Track income, expenses, budgets, and generate financial reports with multi-user support.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Table of Contents
 
-## Description
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [API Documentation](#api-documentation)
+- [Testing with Postman](#testing-with-postman)
+- [Available Scripts](#available-scripts)
+- [Authentication](#authentication)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [Development Workflow](#development-workflow)
+- [Testing](#testing)
+- [Common Issues](#common-issues)
+- [Documentation](#documentation)
+- [License](#license)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- **Categories**: Organize income/expense transactions (custom categories per user)
+- **Transactions**: Record income and expense entries with dates, amounts, and categories
+- **Budgets**: Set spending limits by category or overall (weekly/monthly/yearly periods)
+- **Reports**: Analyze spending with summary, category breakdown, budget status, and trends
+- **Authentication**: Email/password auth via Better Auth with secure session management
+- **Multi-tenant**: Each user sees only their own data (automatic row-level security)
+- **API Docs**: Interactive Swagger/OpenAPI documentation
 
-```bash
-$ npm install
-```
+## Tech Stack
 
-## Compile and run the project
+- **Framework**: NestJS 11 (TypeScript)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: Better Auth (email/password + Expo mobile plugin)
+- **Validation**: class-validator, class-transformer
+- **Documentation**: Swagger/OpenAPI
+- **Code Quality**: Biome (linting/formatting)
+- **Testing**: Jest (unit, integration, E2E)
 
-```bash
-# development
-$ npm run start
+## Prerequisites
 
-# watch mode
-$ npm run start:dev
+- **Node.js**: v18 or higher
+- **PostgreSQL**: v12 or higher
+- **npm**: v9 or higher
 
-# production mode
-$ npm run start:prod
-```
+## Quick Start
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 1. Clone Repository
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone <repository-url>
+cd api-financas-pessoais
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 2. Setup Environment
 
-## Resources
+Copy `.env.example` to `.env` and configure:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+cp .env.example .env
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Edit `.env` with your configuration:
 
-## Support
+```env
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://user:password@localhost:5432/financas_db?schema=public"
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Better Auth (generate random secret for production)
+BETTER_AUTH_SECRET="random_secret_key_here"
+BETTER_AUTH_URL="http://localhost:3000"
 
-## Stay in touch
+# Server
+PORT=3000
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 3. Database Setup
+
+Create PostgreSQL database and run migrations:
+
+```bash
+npx prisma migrate dev
+```
+
+### 4. Seed Test Data
+
+Populate database with test users, categories, transactions, and budgets:
+
+```bash
+npm run db:seed
+```
+
+**Test Credentials**:
+- `joao@test.com` / `password123`
+- `maria@test.com` / `password123`
+
+### 5. Run Development Server
+
+```bash
+npm run start:dev
+```
+
+Server starts at `http://localhost:3000`
+
+## API Documentation
+
+### Interactive Swagger UI
+```
+http://localhost:3000/api
+```
+
+### OpenAPI JSON Spec
+```
+http://localhost:3000/api-json
+```
+
+All endpoints (except `/api/auth/*`) require authentication via Bearer token or session cookie.
+
+## Testing with Postman
+
+### 1. Sign In
+
+```
+POST http://localhost:3000/api/auth/sign-in/email
+Headers: Origin: http://localhost:3000, Content-Type: application/json
+
+{
+  "email": "joao@test.com",
+  "password": "password123"
+}
+```
+
+### 2. Access Protected Endpoints
+
+After sign-in, session cookies are automatically included. Example:
+
+```
+GET http://localhost:3000/categories
+```
+
+### 3. Common Endpoints
+
+```
+GET    /categories              - List user's categories
+POST   /categories              - Create category
+PUT    /categories/:id          - Update category
+DELETE /categories/:id          - Delete category
+
+GET    /transactions            - List transactions (with filters)
+POST   /transactions            - Create transaction
+PUT    /transactions/:id        - Update transaction
+DELETE /transactions/:id        - Delete transaction
+
+GET    /budgets                 - List budgets
+POST   /budgets                 - Create budget
+PUT    /budgets/:id             - Update budget
+DELETE /budgets/:id             - Delete budget
+
+GET    /reports/summary         - Income/expense summary
+GET    /reports/by-category     - Spending by category
+GET    /reports/budget-status   - Budget vs actual
+GET    /reports/trends          - Monthly trends (last 6 months)
+```
+
+## Available Scripts
+
+```bash
+# Development
+npm run start:dev       # Start with hot-reload
+npm run build          # Build TypeScript to dist/
+
+# Database
+npx prisma migrate dev # Create & apply migration
+npx prisma generate   # Regenerate Prisma client
+npm run db:seed       # Populate database with test data
+
+# Testing & Quality
+npm test              # Run unit & integration tests
+npm test:watch        # Watch mode
+npm test:cov          # Coverage report
+npm run test:e2e      # E2E tests
+npm run check         # Format & lint with Biome (auto-fix)
+
+# Production
+npm run build         # Compile to dist/
+npm run start:prod    # Run compiled app
+```
+
+## Authentication
+
+Better Auth secures all endpoints (except auth routes) by:
+- Validating session tokens from cookies
+- Using `@Session()` decorator to inject authenticated user data
+- Automatically filtering queries by `session.user.id`
+
+**Important for Postman/API testing**:
+- Add `Origin: http://localhost:3000` header to requests (CSRF protection)
+- Cookies from sign-in are automatically sent to protected endpoints
+
+## Project Structure
+
+```
+src/
+├── categories/         # Categories module (CRUD)
+├── transactions/       # Transactions module (CRUD with filtering)
+├── budgets/           # Budgets module (CRUD with validation)
+├── reports/           # Analytics & reports
+├── lib/
+│   └── auth.ts        # Better Auth configuration
+├── app.module.ts      # Main app module
+├── app.controller.ts  # App routes
+├── main.ts            # Bootstrap & Swagger setup
+└── prisma.service.ts  # Database client
+
+prisma/
+├── schema.prisma      # Data model definitions
+└── seed.ts            # Database seeding script
+
+test/
+├── *.e2e-spec.ts      # E2E tests
+└── jest-e2e.json      # E2E Jest config
+```
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | ✅ | - | PostgreSQL connection string (`postgresql://user:password@host:port/db?schema=public`) |
+| `BETTER_AUTH_SECRET` | ✅ | - | Secret key for signing Better Auth tokens (generate random value in production) |
+| `BETTER_AUTH_URL` | ✅ | - | Base URL of your application (used for auth redirects) |
+| `PORT` | ❌ | 3000 | Server port where API listens |
+
+**Setup**: Copy `.env.example` to `.env` and fill in your values (see Quick Start step 2)
+
+## Development Workflow
+
+### Adding a New Feature
+
+1. **Update Prisma Schema** (`prisma/schema.prisma`)
+   ```bash
+   npx prisma migrate dev --name "description"
+   ```
+
+2. **Create Module** (`src/feature/`)
+   - `feature.controller.ts` - Routes & Swagger docs
+   - `feature.service.ts` - Business logic
+   - `feature.module.ts` - DI container
+   - `dto/` - Request/response validation
+
+3. **Import Module** in `src/app.module.ts`
+
+4. **Write Tests**
+   - Unit: `feature.service.spec.ts`
+   - Integration: `feature.controller.spec.ts`
+   - E2E: `test/feature.e2e-spec.ts`
+
+5. **API Docs Update** Automatically via Swagger decorators
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Watch mode (great for development)
+npm test -- --watch
+
+# Specific module
+npm test -- --testPathPattern=categories
+
+# Coverage report
+npm test -- --coverage
+
+# E2E tests
+npm run test:e2e
+```
+
+**Test Structure**:
+- **Unit Tests** (`*.service.spec.ts`): Service logic with mocked Prisma
+- **Integration Tests** (`*.controller.spec.ts`): Controller endpoints with mocked services
+- **E2E Tests** (`test/*.e2e-spec.ts`): Full app instance with real database
+
+## Common Issues
+
+### "Missing or null Origin" Error (Postman)
+Add `Origin: http://localhost:3000` header to requests (Better Auth CSRF protection).
+
+### "Invalid password hash" Error
+Use the test credentials from `npm run db:seed` (passwords hashed with Better Auth's algorithm).
+
+### Database Connection Failed
+- Verify PostgreSQL is running
+- Check `DATABASE_URL` in `.env` is correct
+- Ensure database exists: `createdb financas_db`
+
+## Documentation
+
+For detailed architecture, patterns, and guidelines, see `CLAUDE.md`:
+- Module structure & patterns
+- Authentication flow
+- Database design
+- Testing strategy
+- Common commands
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED
