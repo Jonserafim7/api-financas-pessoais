@@ -8,9 +8,14 @@ import { AppService } from "./app.service";
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
-	@Get("")
+	@Get("/public")
 	@AllowAnonymous() // Allow anonymous access (no authentication required)
-	getHello(): string {
+	getHelloPublic(): string {
+		return this.appService.getHello();
+	}
+
+	@Get("/private")
+	getHelloPrivate(): string {
 		return this.appService.getHello();
 	}
 }
