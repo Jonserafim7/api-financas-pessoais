@@ -3,10 +3,17 @@ import { PrismaService } from "../prisma.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 
+/**
+ * Manages user expense/income categories with unique name constraint per user
+ */
 @Injectable()
 export class CategoriesService {
 	constructor(private prisma: PrismaService) {}
 
+	/**
+	 * Create category with unique name validation
+	 * @throws BadRequestException if name already exists for this user
+	 */
 	async create(userId: string, createCategoryDto: CreateCategoryDto) {
 		try {
 			const category = await this.prisma.category.create({
@@ -26,6 +33,9 @@ export class CategoriesService {
 		}
 	}
 
+	/**
+	 * List all user categories ordered by creation date
+	 */
 	async findAll(userId: string) {
 		return this.prisma.category.findMany({
 			where: { userId },
@@ -33,6 +43,10 @@ export class CategoriesService {
 		});
 	}
 
+	/**
+	 * Get single category by ID
+	 * @throws NotFoundException if not found
+	 */
 	async findOne(id: string, userId: string) {
 		const category = await this.prisma.category.findFirst({
 			where: { id, userId },
@@ -45,6 +59,10 @@ export class CategoriesService {
 		return category;
 	}
 
+	/**
+	 * Update category with unique name validation
+	 * @throws BadRequestException if new name already exists
+	 */
 	async update(id: string, userId: string, updateCategoryDto: UpdateCategoryDto) {
 		await this.findOne(id, userId);
 
@@ -61,6 +79,9 @@ export class CategoriesService {
 		}
 	}
 
+	/**
+	 * Delete category (cascades to transactions)
+	 */
 	async remove(id: string, userId: string) {
 		await this.findOne(id, userId);
 

@@ -5,10 +5,16 @@ import { CategoryReportDto } from "./dto/category-report.dto";
 import { BudgetStatusReportDto, BudgetStatusItemDto } from "./dto/budget-status-report.dto";
 import { TrendsReportDto } from "./dto/trends-report.dto";
 
+/**
+ * Generates financial analytics and reports for spending analysis
+ */
 @Injectable()
 export class ReportsService {
 	constructor(private prisma: PrismaService) {}
 
+	/**
+	 * Calculate total income, expense, and balance for period
+	 */
 	async getSummary(userId: string, dateFrom?: Date, dateTo?: Date): Promise<SummaryReportDto> {
 		const where: any = { userId };
 
@@ -42,6 +48,9 @@ export class ReportsService {
 		};
 	}
 
+	/**
+	 * Aggregate spending by category and type (income/expense)
+	 */
 	async getByCategory(userId: string, dateFrom?: Date, dateTo?: Date): Promise<CategoryReportDto> {
 		const where: any = { userId };
 
@@ -57,6 +66,7 @@ export class ReportsService {
 			orderBy: { category: { name: "asc" } },
 		});
 
+		// Group transactions by category name and type
 		const grouped = new Map<string, { total: number; count: number; type: string }>();
 
 		for (const transaction of transactions) {
@@ -82,6 +92,9 @@ export class ReportsService {
 		};
 	}
 
+	/**
+	 * Compare actual spending vs budget limits with status indicators
+	 */
 	async getBudgetStatus(userId: string, dateFrom?: Date, dateTo?: Date): Promise<BudgetStatusReportDto> {
 		const budgets = await this.prisma.budget.findMany({
 			where: { userId },
@@ -101,13 +114,16 @@ export class ReportsService {
 		});
 
 		const data: BudgetStatusItemDto[] = budgets.map((budget) => {
+			// Calculate spent amount: sum of expenses for this budget (category or overall)
 			let spent = 0;
 
 			if (budget.categoryId) {
+				// Category-specific budget: sum expenses for this category only
 				spent = transactions
 					.filter((t) => t.categoryId === budget.categoryId && t.type === "EXPENSE")
 					.reduce((sum, t) => sum + Number(t.amount), 0);
 			} else {
+				// Overall budget: sum all expenses
 				spent = transactions
 					.filter((t) => t.type === "EXPENSE")
 					.reduce((sum, t) => sum + Number(t.amount), 0);
@@ -117,6 +133,7 @@ export class ReportsService {
 			const remaining = budgetAmount - spent;
 			const percentageUsed = (spent / budgetAmount) * 100;
 
+			// Status: exceeded (>=100%), warning (>=80%), ok (<80%)
 			let status: "ok" | "warning" | "exceeded" = "ok";
 			if (percentageUsed >= 100) {
 				status = "exceeded";
@@ -142,6 +159,9 @@ export class ReportsService {
 		};
 	}
 
+	/**
+	 * Calculate monthly income/expense trends for last N months
+	 */
 	async getTrends(userId: string, months: number = 6): Promise<TrendsReportDto> {
 		const endDate = new Date();
 		const startDate = new Date();
@@ -161,7 +181,7 @@ export class ReportsService {
 
 		const monthlyData = new Map<string, { income: number; expense: number }>();
 
-		// Initialize all months
+		// Initialize all months with zero values (ensures complete data even for months with no transactions)
 		for (let i = 0; i < months; i++) {
 			const date = new Date();
 			date.setMonth(date.getMonth() - months + 1 + i);
@@ -169,7 +189,7 @@ export class ReportsService {
 			monthlyData.set(monthKey, { income: 0, expense: 0 });
 		}
 
-		// Aggregate transactions
+		// Aggregate transactions by month and type
 		for (const transaction of transactions) {
 			const monthKey = transaction.date.toISOString().slice(0, 7);
 			const current = monthlyData.get(monthKey) || { income: 0, expense: 0 };
@@ -198,6 +218,10 @@ export class ReportsService {
 		};
 	}
 
+	/**
+	 * Format date range for report display
+	 * @private
+	 */
 	private getPeriodString(dateFrom?: Date, dateTo?: Date): string {
 		if (!dateFrom && !dateTo) {
 			return "Todas as datas";

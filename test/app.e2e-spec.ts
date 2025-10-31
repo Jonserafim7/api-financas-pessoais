@@ -7,7 +7,7 @@ import { AppModule } from "./../src/app.module";
 describe("AppController (e2e)", () => {
 	let app: INestApplication<App>;
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
 		}).compile();
@@ -16,10 +16,20 @@ describe("AppController (e2e)", () => {
 		await app.init();
 	});
 
-	it("/ (GET)", () => {
+	afterAll(async () => {
+		await app.close();
+	});
+
+	it("/public (GET) - anonymous access", () => {
 		return request(app.getHttpServer())
-			.get("/")
+			.get("/public")
 			.expect(200)
 			.expect("Hello World!");
+	});
+
+	it("/private (GET) - requires authentication", () => {
+		return request(app.getHttpServer())
+			.get("/private")
+			.expect(401);
 	});
 });

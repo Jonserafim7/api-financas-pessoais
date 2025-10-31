@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(npm test:*)",
+      "Bash(npm run test:e2e:*)"
     ],
     "deny": [],
     "ask": []

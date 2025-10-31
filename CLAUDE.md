@@ -145,6 +145,73 @@ const categories = await this.prisma.category.findMany({
 - `NotFoundException`: Resource not found for user
 - Other NestJS HttpExceptions bubble up with proper status codes
 
+## JSDoc & Comments
+
+### Style Guidelines
+- **Concise**: Brief descriptions, no redundancy
+- **Purpose-focused**: Explain "why", not obvious "what"
+- **Business logic only**: Skip comments on straightforward code
+
+### JSDoc Conventions
+
+**Class-level JSDoc** (explain service/class purpose):
+```typescript
+/**
+ * Manages user expense/income categories with unique name constraint per user
+ */
+@Injectable()
+export class CategoriesService {
+```
+
+**Method-level JSDoc** (describe what method does + exceptions):
+```typescript
+/**
+ * Create category with unique name validation
+ * @throws BadRequestException if name already exists for this user
+ */
+async create(userId: string, createCategoryDto: CreateCategoryDto) {
+```
+
+**Helper/Private method JSDoc**:
+```typescript
+/**
+ * Format date range for report display
+ * @private
+ */
+private getPeriodString(dateFrom?: Date, dateTo?: Date): string {
+```
+
+### Inline Comments
+
+Use only for non-obvious business logic:
+
+```typescript
+// Validate category ownership if category is being changed
+if (updateTransactionDto.categoryId) {
+  const category = await this.prisma.category.findFirst(...)
+}
+
+// Status: exceeded (>=100%), warning (>=80%), ok (<80%)
+let status: "ok" | "warning" | "exceeded" = "ok";
+```
+
+**Don't comment obvious code**:
+```typescript
+// ❌ AVOID: Redundant
+const categories = await this.prisma.category.findMany();  // Get all categories
+
+// ✅ GOOD: Only business logic
+// Initialize all months with zero values (ensures complete data for empty months)
+const monthlyData = new Map<string, { income: number; expense: number }>();
+```
+
+### Where Comments Exist
+
+- **Services** (`src/*/**.service.ts`): Class docs + method JSDoc + business logic comments
+- **Config files** (`src/main.ts`, `src/lib/auth.ts`): Explanatory comments for setup
+- **Controllers, DTOs**: Use `@ApiProperty` + `@ApiOperation` instead (Swagger docs)
+- **Tests**: Minimal comments (test names are self-documenting)
+
 ## Biome Configuration
 
 Linting/formatting via `biomejs/biome` 2.3.2:
@@ -170,6 +237,69 @@ Jest configured with TypeScript support (`ts-jest`). Test files: `*.spec.ts` in 
 npm run test:watch      # Useful during development
 npm run test -- --testPathPattern=categories  # Run specific module tests
 ```
+
+## Testing Strategy
+
+### Test Types & Locations
+- **Unit Tests** (`*.service.spec.ts`): Service logic, mocked Prisma
+- **Integration Tests** (`*.controller.spec.ts`): Controller endpoints, mocked Service
+- **E2E Tests** (`test/*.e2e-spec.ts`): Full app instance, real routes, auth requirements
+
+### Running Tests
+```bash
+npm test              # Unit + integration (src/**/*.spec.ts)
+npm run test:e2e      # E2E tests (test/**/*.e2e-spec.ts)
+npm test -- --watch   # Watch mode
+npm test -- --coverage # Coverage report
+```
+
+### Test Setup Patterns
+
+**Unit Tests (Service):**
+```typescript
+import { createPrismaMock } from "../test/mocks/prisma.mock";
+const prisma = createPrismaMock();
+const module = await Test.createTestingModule({
+  providers: [ServiceClass, { provide: PrismaService, useValue: prisma }],
+}).compile();
+```
+
+**Integration Tests (Controller):**
+```typescript
+const module = await Test.createTestingModule({
+  controllers: [ControllerClass],
+  providers: [{
+    provide: ServiceClass,
+    useValue: { method1: jest.fn(), method2: jest.fn() }
+  }],
+}).compile();
+```
+
+**E2E Tests:**
+```typescript
+const module = await Test.createTestingModule({
+  imports: [AppModule], // Full app with real connections
+}).compile();
+app = module.createNestApplication();
+await app.init();
+```
+
+### Mocks Location
+- `src/test/mocks/prisma.mock.ts` - Mock Prisma methods
+- `src/test/mocks/session.mock.ts` - Mock Better Auth session (includes TEST_USER_ID)
+
+### Jest Configuration (package.json)
+Critical for better-auth compatibility:
+```json
+"transformIgnorePatterns": [
+  "node_modules/(?!(better-auth|@better-auth|@thallesp|jose|@noble|@panva)/)"
+]
+```
+Same config also in `test/jest-e2e.json`.
+
+### Test Coverage
+- Categories: 11 unit + 7 integration + 3 E2E = 21 tests ✅
+- Transactions, Budgets, Reports: Follow same pattern
 
 ## Build & Deployment
 

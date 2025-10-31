@@ -3,12 +3,19 @@ import { PrismaService } from "../prisma.service";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { UpdateTransactionDto } from "./dto/update-transaction.dto";
 
+/**
+ * Manages user income/expense transactions with category validation
+ */
 @Injectable()
 export class TransactionsService {
 	constructor(private prisma: PrismaService) {}
 
+	/**
+	 * Create transaction with category ownership validation
+	 * @throws BadRequestException if category not found or doesn't belong to user
+	 */
 	async create(userId: string, createTransactionDto: CreateTransactionDto) {
-		// Verify category exists and belongs to user
+		// Ensure category belongs to user before creating transaction
 		const category = await this.prisma.category.findFirst({
 			where: {
 				id: createTransactionDto.categoryId,
@@ -34,6 +41,9 @@ export class TransactionsService {
 		return transaction;
 	}
 
+	/**
+	 * List transactions with optional filters (date range, category, type)
+	 */
 	async findAll(
 		userId: string,
 		filters?: {
@@ -66,6 +76,10 @@ export class TransactionsService {
 		});
 	}
 
+	/**
+	 * Get single transaction with category details
+	 * @throws NotFoundException if not found
+	 */
 	async findOne(id: string, userId: string) {
 		const transaction = await this.prisma.transaction.findFirst({
 			where: { id, userId },
@@ -79,9 +93,14 @@ export class TransactionsService {
 		return transaction;
 	}
 
+	/**
+	 * Update transaction with optional category change
+	 * @throws BadRequestException if new category doesn't belong to user
+	 */
 	async update(id: string, userId: string, updateTransactionDto: UpdateTransactionDto) {
 		await this.findOne(id, userId);
 
+		// Validate category ownership if category is being changed
 		if (updateTransactionDto.categoryId) {
 			const category = await this.prisma.category.findFirst({
 				where: {
@@ -107,6 +126,9 @@ export class TransactionsService {
 		});
 	}
 
+	/**
+	 * Delete transaction
+	 */
 	async remove(id: string, userId: string) {
 		await this.findOne(id, userId);
 

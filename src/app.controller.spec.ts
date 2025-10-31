@@ -14,9 +14,15 @@ describe("AppController", () => {
 		appController = app.get<AppController>(AppController);
 	});
 
-	describe("root", () => {
+	describe("getHelloPublic", () => {
 		it('should return "Hello World!"', () => {
-			expect(appController.getHello()).toBe("Hello World!");
+			expect(appController.getHelloPublic()).toBe("Hello World!");
+		});
+	});
+
+	describe("getHelloPrivate", () => {
+		it('should return "Hello World!"', () => {
+			expect(appController.getHelloPrivate()).toBe("Hello World!");
 		});
 	});
 });

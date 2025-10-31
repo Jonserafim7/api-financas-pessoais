@@ -3,12 +3,19 @@ import { PrismaService } from "../prisma.service";
 import { CreateBudgetDto } from "./dto/create-budget.dto";
 import { UpdateBudgetDto } from "./dto/update-budget.dto";
 
+/**
+ * Manages budget limits with period-based spending tracking
+ */
 @Injectable()
 export class BudgetsService {
 	constructor(private prisma: PrismaService) {}
 
+	/**
+	 * Create budget with category and date validation
+	 * @throws BadRequestException if category not found or endDate invalid
+	 */
 	async create(userId: string, createBudgetDto: CreateBudgetDto) {
-		// Verify category exists if provided
+		// Ensure category belongs to user (optional)
 		if (createBudgetDto.categoryId) {
 			const category = await this.prisma.category.findFirst({
 				where: {
@@ -22,7 +29,7 @@ export class BudgetsService {
 			}
 		}
 
-		// Validate dates
+		// Ensure period validity: endDate must be after startDate
 		const startDate = new Date(createBudgetDto.startDate);
 		const endDate = createBudgetDto.endDate ? new Date(createBudgetDto.endDate) : null;
 
@@ -44,6 +51,9 @@ export class BudgetsService {
 		return budget;
 	}
 
+	/**
+	 * List all user budgets with category details
+	 */
 	async findAll(userId: string) {
 		return this.prisma.budget.findMany({
 			where: { userId },
@@ -52,6 +62,10 @@ export class BudgetsService {
 		});
 	}
 
+	/**
+	 * Get single budget by ID
+	 * @throws NotFoundException if not found
+	 */
 	async findOne(id: string, userId: string) {
 		const budget = await this.prisma.budget.findFirst({
 			where: { id, userId },
@@ -65,9 +79,14 @@ export class BudgetsService {
 		return budget;
 	}
 
+	/**
+	 * Update budget with date and category validation
+	 * @throws BadRequestException if date/category validation fails
+	 */
 	async update(id: string, userId: string, updateBudgetDto: UpdateBudgetDto) {
 		await this.findOne(id, userId);
 
+		// Validate category ownership if changing category
 		if (updateBudgetDto.categoryId) {
 			const category = await this.prisma.category.findFirst({
 				where: {
@@ -90,7 +109,7 @@ export class BudgetsService {
 		if (data.endDate) {
 			data.endDate = new Date(data.endDate);
 
-			// Get current startDate if not being updated
+			// Validate period: endDate must be after startDate (whether new or existing)
 			if (!data.startDate) {
 				const current = await this.prisma.budget.findUnique({
 					where: { id },
@@ -110,6 +129,9 @@ export class BudgetsService {
 		});
 	}
 
+	/**
+	 * Delete budget
+	 */
 	async remove(id: string, userId: string) {
 		await this.findOne(id, userId);
 
