@@ -221,6 +221,26 @@ npm run check    # Auto-fix format + lint issues
 
 Configured in `.git/ignore` + likely `biome.json` (check project root).
 
+## Database Seeding
+
+Populate database with test data (users, categories, transactions, budgets):
+
+```bash
+npm run db:seed
+```
+
+### Test Credentials
+After seeding, use these credentials to test the API:
+- **User 1**: `joao@test.com` / `password123`
+- **User 2**: `maria@test.com` / `password123`
+
+Each user has:
+- 4-6 expense/income categories
+- 15-20 sample transactions (last 3 months)
+- 2-3 monthly budgets (category-specific + overall)
+
+**Note**: Seed script clears all data before seeding. Use only in development.
+
 ## Environment Variables
 
 Required in `.env`:

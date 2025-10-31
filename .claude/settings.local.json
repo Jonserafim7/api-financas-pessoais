@@ -5,7 +5,8 @@
       "mcp__context7__get-library-docs",
       "Bash(npm test:*)",
       "Bash(npm run test:e2e:*)",
-      "mcp__better-auth__search"
+      "mcp__better-auth__search",
+      "Bash(npm run db:seed:*)"
     ],
     "deny": [],
     "ask": []
