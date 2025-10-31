@@ -1,6 +1,8 @@
+/** biome-ignore-all lint/style/useImportType: NestJS needs the service declaration, else we get dependency injection errors */
 import { Controller, Get } from "@nestjs/common";
 import { AllowAnonymous } from "@thallesp/nestjs-better-auth";
-import type { AppService } from "./app.service";
+
+import { AppService } from "./app.service";
 
 @Controller()
 export class AppController {
