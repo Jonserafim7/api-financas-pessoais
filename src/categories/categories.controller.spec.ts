@@ -1,10 +1,14 @@
-import { Test, type TestingModule } from "@nestjs/testing";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { createMockSession, TEST_USER_ID } from "../test/mocks/session.mock";
+import { TransactionType } from "../transactions/dto/create-transaction.dto";
 import { CategoriesController } from "./categories.controller";
 import { CategoriesService } from "./categories.service";
-import { CreateCategoryDto } from "./dto/create-category.dto";
-import { UpdateCategoryDto } from "./dto/update-category.dto";
-import { createMockSession, TEST_USER_ID } from "../test/mocks/session.mock";
+import {
+	CategoryType,
+	type CreateCategoryDto,
+} from "./dto/create-category.dto";
+import type { UpdateCategoryDto } from "./dto/update-category.dto";
 
 describe("CategoriesController", () => {
 	let controller: CategoriesController;
@@ -39,14 +43,16 @@ describe("CategoriesController", () => {
 		it("should create a new category", async () => {
 			const dto: CreateCategoryDto = {
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 				color: "#FF5733",
 			};
 
 			const mockCategory = {
 				id: "cat-1",
 				userId: TEST_USER_ID,
-				...dto,
+				name: dto.name,
+				type: TransactionType.EXPENSE,
+				color: dto.color || null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			};
@@ -63,7 +69,7 @@ describe("CategoriesController", () => {
 		it("should return 400 if category name already exists", async () => {
 			const dto: CreateCategoryDto = {
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 			};
 
 			jest
@@ -89,7 +95,7 @@ describe("CategoriesController", () => {
 					id: "cat-1",
 					userId: TEST_USER_ID,
 					name: "Alimentação",
-					type: "EXPENSE",
+					type: TransactionType.EXPENSE,
 					color: "#FF5733",
 					createdAt: new Date(),
 					updatedAt: new Date(),
@@ -112,7 +118,7 @@ describe("CategoriesController", () => {
 				id: "cat-1",
 				userId: TEST_USER_ID,
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: TransactionType.EXPENSE,
 				color: "#FF5733",
 				createdAt: new Date(),
 				updatedAt: new Date(),
@@ -150,7 +156,7 @@ describe("CategoriesController", () => {
 				id: "cat-1",
 				userId: TEST_USER_ID,
 				name: "Alimentação Atualizada",
-				type: "EXPENSE",
+				type: TransactionType.EXPENSE,
 				color: "#FF5733",
 				createdAt: new Date(),
 				updatedAt: new Date(),
@@ -172,7 +178,7 @@ describe("CategoriesController", () => {
 				id: "cat-1",
 				userId: TEST_USER_ID,
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: TransactionType.EXPENSE,
 				color: "#FF5733",
 				createdAt: new Date(),
 				updatedAt: new Date(),

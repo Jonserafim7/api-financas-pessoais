@@ -1,7 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { CreateBudgetDto } from "./dto/create-budget.dto";
-import { UpdateBudgetDto } from "./dto/update-budget.dto";
+import type { CreateBudgetDto } from "./dto/create-budget.dto";
+import type { UpdateBudgetDto } from "./dto/update-budget.dto";
 
 /**
  * Manages budget limits with period-based spending tracking
@@ -31,10 +35,14 @@ export class BudgetsService {
 
 		// Ensure period validity: endDate must be after startDate
 		const startDate = new Date(createBudgetDto.startDate);
-		const endDate = createBudgetDto.endDate ? new Date(createBudgetDto.endDate) : null;
+		const endDate = createBudgetDto.endDate
+			? new Date(createBudgetDto.endDate)
+			: null;
 
 		if (endDate && endDate <= startDate) {
-			throw new BadRequestException("Data de término deve ser posterior à data de início");
+			throw new BadRequestException(
+				"Data de término deve ser posterior à data de início",
+			);
 		}
 
 		const budget = await this.prisma.budget.create({
@@ -100,6 +108,7 @@ export class BudgetsService {
 			}
 		}
 
+		// biome-ignore lint/suspicious/noExplicitAny: permite construção dinâmica do objeto data com propriedades condicionais
 		const data: any = { ...updateBudgetDto };
 
 		if (data.startDate) {
@@ -115,10 +124,14 @@ export class BudgetsService {
 					where: { id },
 				});
 				if (current && data.endDate <= current.startDate) {
-					throw new BadRequestException("Data de término deve ser posterior à data de início");
+					throw new BadRequestException(
+						"Data de término deve ser posterior à data de início",
+					);
 				}
 			} else if (data.endDate <= data.startDate) {
-				throw new BadRequestException("Data de término deve ser posterior à data de início");
+				throw new BadRequestException(
+					"Data de término deve ser posterior à data de início",
+				);
 			}
 		}
 

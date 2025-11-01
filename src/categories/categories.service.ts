@@ -1,7 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { CreateCategoryDto } from "./dto/create-category.dto";
-import { UpdateCategoryDto } from "./dto/update-category.dto";
+import type { CreateCategoryDto } from "./dto/create-category.dto";
+import type { UpdateCategoryDto } from "./dto/update-category.dto";
 
 /**
  * Manages user expense/income categories with unique name constraint per user
@@ -27,7 +31,9 @@ export class CategoriesService {
 			return category;
 		} catch (error) {
 			if (error.code === "P2002") {
-				throw new BadRequestException("Categoria com este nome já existe para este usuário");
+				throw new BadRequestException(
+					"Categoria com este nome já existe para este usuário",
+				);
 			}
 			throw error;
 		}
@@ -63,7 +69,11 @@ export class CategoriesService {
 	 * Update category with unique name validation
 	 * @throws BadRequestException if new name already exists
 	 */
-	async update(id: string, userId: string, updateCategoryDto: UpdateCategoryDto) {
+	async update(
+		id: string,
+		userId: string,
+		updateCategoryDto: UpdateCategoryDto,
+	) {
 		await this.findOne(id, userId);
 
 		try {
@@ -73,7 +83,9 @@ export class CategoriesService {
 			});
 		} catch (error) {
 			if (error.code === "P2002") {
-				throw new BadRequestException("Categoria com este nome já existe para este usuário");
+				throw new BadRequestException(
+					"Categoria com este nome já existe para este usuário",
+				);
 			}
 			throw error;
 		}

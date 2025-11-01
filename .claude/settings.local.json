@@ -1,14 +1,14 @@
 {
-  "permissions": {
-    "allow": [
-      "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs",
-      "Bash(npm test:*)",
-      "Bash(npm run test:e2e:*)",
-      "mcp__better-auth__search",
-      "Bash(npm run db:seed:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
+	"permissions": {
+		"allow": [
+			"mcp__context7__resolve-library-id",
+			"mcp__context7__get-library-docs",
+			"Bash(npm test:*)",
+			"Bash(npm run test:e2e:*)",
+			"mcp__better-auth__search",
+			"Bash(npm run db:seed:*)"
+		],
+		"deny": [],
+		"ask": []
+	}
 }

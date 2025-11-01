@@ -1,5 +1,6 @@
+import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 
 /**
@@ -11,10 +12,24 @@ async function bootstrap() {
 		bodyParser: false,
 	});
 
+	// Enable global validation pipe for DTOs
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			forbidNonWhitelisted: true,
+			transform: true,
+			transformOptions: {
+				enableImplicitConversion: true,
+			},
+		}),
+	);
+
 	// Configure Swagger/OpenAPI documentation with Bearer token authentication
 	const config = new DocumentBuilder()
 		.setTitle("API Finanças Pessoais")
-		.setDescription("API de controle de finanças pessoais com categorias, transações, orçamentos e relatórios")
+		.setDescription(
+			"API de controle de finanças pessoais com categorias, transações, orçamentos e relatórios",
+		)
 		.setVersion("1.0")
 		.addBearerAuth()
 		.build();

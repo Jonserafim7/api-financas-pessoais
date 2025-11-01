@@ -1,10 +1,25 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
-import { Session, UserSession } from "@thallesp/nestjs-better-auth";
-import { TransactionsService } from "./transactions.service";
-import { CreateTransactionDto } from "./dto/create-transaction.dto";
-import { UpdateTransactionDto } from "./dto/update-transaction.dto";
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	Put,
+	Query,
+} from "@nestjs/common";
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+} from "@nestjs/swagger";
+import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import type { CreateTransactionDto } from "./dto/create-transaction.dto";
+import type { FilterTransactionDto } from "./dto/filter-transaction.dto";
 import { TransactionResponseDto } from "./dto/transaction-response.dto";
+import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
+import { TransactionsService } from "./transactions.service";
 
 @Controller("transactions")
 @ApiTags("Transactions")
@@ -24,34 +39,29 @@ export class TransactionsController {
 		@Session() session: UserSession,
 		@Body() createTransactionDto: CreateTransactionDto,
 	) {
-		return this.transactionsService.create(session.user.id, createTransactionDto);
+		return this.transactionsService.create(
+			session.user.id,
+			createTransactionDto,
+		);
 	}
 
 	@Get()
-	@ApiOperation({ summary: "Listar transações do usuário com filtros opcionais" })
-	@ApiQuery({ name: "dateFrom", required: false, description: "Data inicial (ISO 8601)" })
-	@ApiQuery({ name: "dateTo", required: false, description: "Data final (ISO 8601)" })
-	@ApiQuery({ name: "categoryId", required: false, description: "Filtrar por categoria" })
-	@ApiQuery({ name: "type", required: false, description: "Filtrar por tipo (INCOME/EXPENSE)" })
+	@ApiOperation({
+		summary: "Listar transações do usuário com filtros opcionais",
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Lista de transações",
 		type: [TransactionResponseDto],
 	})
+	@ApiResponse({
+		status: 400,
+		description: "Datas inválidas (ISO 8601 required)",
+	})
 	async findAll(
 		@Session() session: UserSession,
-		@Query("dateFrom") dateFrom?: string,
-		@Query("dateTo") dateTo?: string,
-		@Query("categoryId") categoryId?: string,
-		@Query("type") type?: string,
+		@Query() filters: FilterTransactionDto,
 	) {
-		const filters = {
-			dateFrom: dateFrom ? new Date(dateFrom) : undefined,
-			dateTo: dateTo ? new Date(dateTo) : undefined,
-			categoryId,
-			type,
-		};
-
 		return this.transactionsService.findAll(session.user.id, filters);
 	}
 
@@ -81,7 +91,11 @@ export class TransactionsController {
 		@Session() session: UserSession,
 		@Body() updateTransactionDto: UpdateTransactionDto,
 	) {
-		return this.transactionsService.update(id, session.user.id, updateTransactionDto);
+		return this.transactionsService.update(
+			id,
+			session.user.id,
+			updateTransactionDto,
+		);
 	}
 
 	@Delete(":id")

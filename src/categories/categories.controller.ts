@@ -1,10 +1,23 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
-import { Session, UserSession } from "@thallesp/nestjs-better-auth";
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	Put,
+} from "@nestjs/common";
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+} from "@nestjs/swagger";
+import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { CategoriesService } from "./categories.service";
-import { CreateCategoryDto } from "./dto/create-category.dto";
-import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { CategoryResponseDto } from "./dto/category-response.dto";
+import type { CreateCategoryDto } from "./dto/create-category.dto";
+import type { UpdateCategoryDto } from "./dto/update-category.dto";
 
 @Controller("categories")
 @ApiTags("Categories")
@@ -19,7 +32,10 @@ export class CategoriesController {
 		description: "Categoria criada com sucesso",
 		type: CategoryResponseDto,
 	})
-	@ApiResponse({ status: 400, description: "Categoria com este nome já existe" })
+	@ApiResponse({
+		status: 400,
+		description: "Categoria com este nome já existe",
+	})
 	async create(
 		@Session() session: UserSession,
 		@Body() createCategoryDto: CreateCategoryDto,
@@ -58,13 +74,20 @@ export class CategoriesController {
 		type: CategoryResponseDto,
 	})
 	@ApiResponse({ status: 404, description: "Categoria não encontrada" })
-	@ApiResponse({ status: 400, description: "Categoria com este nome já existe" })
+	@ApiResponse({
+		status: 400,
+		description: "Categoria com este nome já existe",
+	})
 	async update(
 		@Param("id") id: string,
 		@Session() session: UserSession,
 		@Body() updateCategoryDto: UpdateCategoryDto,
 	) {
-		return this.categoriesService.update(id, session.user.id, updateCategoryDto);
+		return this.categoriesService.update(
+			id,
+			session.user.id,
+			updateCategoryDto,
+		);
 	}
 
 	@Delete(":id")

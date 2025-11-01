@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
-import { PrismaClient } from "../generated/prisma/client";
+import type { Prisma } from "../generated/prisma/client";
+import { PrismaClient, type User } from "../generated/prisma/client";
 import { auth } from "../src/lib/auth";
 
 dotenv.config();
@@ -33,10 +34,10 @@ async function seed() {
 		},
 	];
 
-	const createdUsers: any[] = [];
+	const createdUsers: User[] = [];
 
 	for (const testUser of testUsers) {
-		const response = await auth.api.signUpEmail({
+		await auth.api.signUpEmail({
 			body: {
 				name: testUser.name,
 				email: testUser.email,
@@ -144,24 +145,31 @@ async function seed() {
 	const now = new Date();
 	const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
 
-	const transactionsUser1: any[] = [];
+	const transactionsUser1: Prisma.TransactionCreateManyInput[] = [];
 	for (let i = 0; i < 20; i++) {
 		const date = new Date(
-			threeMonthsAgo.getTime() + Math.random() * (now.getTime() - threeMonthsAgo.getTime())
+			threeMonthsAgo.getTime() +
+				Math.random() * (now.getTime() - threeMonthsAgo.getTime()),
 		);
 		const isIncome = Math.random() > 0.8;
 		const category = isIncome
 			? user1Categories.find((c) => c.type === "INCOME")
 			: user1Categories.find((c) => c.type === "EXPENSE");
 
-		transactionsUser1.push({
-			userId: user1Id,
-			categoryId: category!.id,
-			type: category!.type,
-			amount: isIncome ? Math.random() * 5000 + 2000 : Math.random() * 500 + 50,
-			description: isIncome ? "Renda do mês" : `Despesa categoria ${category!.name}`,
-			date,
-		});
+		if (category) {
+			transactionsUser1.push({
+				userId: user1Id,
+				categoryId: category.id,
+				type: category.type,
+				amount: isIncome
+					? Math.random() * 5000 + 2000
+					: Math.random() * 500 + 50,
+				description: isIncome
+					? "Renda do mês"
+					: `Despesa categoria ${category.name}`,
+				date,
+			});
+		}
 	}
 
 	await prisma.transaction.createMany({
@@ -169,24 +177,31 @@ async function seed() {
 	});
 
 	// Create transactions for user2
-	const transactionsUser2: any[] = [];
+	const transactionsUser2: Prisma.TransactionCreateManyInput[] = [];
 	for (let i = 0; i < 15; i++) {
 		const date = new Date(
-			threeMonthsAgo.getTime() + Math.random() * (now.getTime() - threeMonthsAgo.getTime())
+			threeMonthsAgo.getTime() +
+				Math.random() * (now.getTime() - threeMonthsAgo.getTime()),
 		);
 		const isIncome = Math.random() > 0.85;
 		const category = isIncome
 			? user2Categories.find((c) => c.type === "INCOME")
 			: user2Categories.find((c) => c.type === "EXPENSE");
 
-		transactionsUser2.push({
-			userId: user2Id,
-			categoryId: category!.id,
-			type: category!.type,
-			amount: isIncome ? Math.random() * 4000 + 3000 : Math.random() * 800 + 100,
-			description: isIncome ? "Salário mensal" : `Despesa em ${category!.name}`,
-			date,
-		});
+		if (category) {
+			transactionsUser2.push({
+				userId: user2Id,
+				categoryId: category.id,
+				type: category.type,
+				amount: isIncome
+					? Math.random() * 4000 + 3000
+					: Math.random() * 800 + 100,
+				description: isIncome
+					? "Salário mensal"
+					: `Despesa em ${category.name}`,
+				date,
+			});
+		}
 	}
 
 	await prisma.transaction.createMany({
@@ -200,59 +215,74 @@ async function seed() {
 	const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
 	const foodCategory1 = user1Categories.find((c) => c.name === "Alimentação");
-	const transportCategory1 = user1Categories.find((c) => c.name === "Transporte");
+	const transportCategory1 = user1Categories.find(
+		(c) => c.name === "Transporte",
+	);
+
+	const budgetsUser1: Prisma.BudgetCreateManyInput[] = [];
+
+	if (foodCategory1) {
+		budgetsUser1.push({
+			userId: user1Id,
+			categoryId: foodCategory1.id,
+			amount: 800,
+			period: "MONTHLY",
+			startDate: startOfMonth,
+			endDate: endOfMonth,
+		});
+	}
+
+	if (transportCategory1) {
+		budgetsUser1.push({
+			userId: user1Id,
+			categoryId: transportCategory1.id,
+			amount: 500,
+			period: "MONTHLY",
+			startDate: startOfMonth,
+			endDate: endOfMonth,
+		});
+	}
+
+	budgetsUser1.push({
+		userId: user1Id,
+		categoryId: null, // Overall budget
+		amount: 3000,
+		period: "MONTHLY",
+		startDate: startOfMonth,
+		endDate: endOfMonth,
+	});
 
 	await prisma.budget.createMany({
-		data: [
-			{
-				userId: user1Id,
-				categoryId: foodCategory1!.id,
-				amount: 800,
-				period: "MONTHLY",
-				startDate: startOfMonth,
-				endDate: endOfMonth,
-			},
-			{
-				userId: user1Id,
-				categoryId: transportCategory1!.id,
-				amount: 500,
-				period: "MONTHLY",
-				startDate: startOfMonth,
-				endDate: endOfMonth,
-			},
-			{
-				userId: user1Id,
-				categoryId: null, // Overall budget
-				amount: 3000,
-				period: "MONTHLY",
-				startDate: startOfMonth,
-				endDate: endOfMonth,
-			},
-		],
+		data: budgetsUser1,
 	});
 
 	// Create budgets for user2
 	const moradia = user2Categories.find((c) => c.name === "Moradia");
 
+	const budgetsUser2: Prisma.BudgetCreateManyInput[] = [];
+
+	if (moradia) {
+		budgetsUser2.push({
+			userId: user2Id,
+			categoryId: moradia.id,
+			amount: 1500,
+			period: "MONTHLY",
+			startDate: startOfMonth,
+			endDate: endOfMonth,
+		});
+	}
+
+	budgetsUser2.push({
+		userId: user2Id,
+		categoryId: null, // Overall budget
+		amount: 3500,
+		period: "MONTHLY",
+		startDate: startOfMonth,
+		endDate: endOfMonth,
+	});
+
 	await prisma.budget.createMany({
-		data: [
-			{
-				userId: user2Id,
-				categoryId: moradia!.id,
-				amount: 1500,
-				period: "MONTHLY",
-				startDate: startOfMonth,
-				endDate: endOfMonth,
-			},
-			{
-				userId: user2Id,
-				categoryId: null, // Overall budget
-				amount: 3500,
-				period: "MONTHLY",
-				startDate: startOfMonth,
-				endDate: endOfMonth,
-			},
-		],
+		data: budgetsUser2,
 	});
 
 	console.log("✅ Created budgets");

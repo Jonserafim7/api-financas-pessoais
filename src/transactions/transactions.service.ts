@@ -1,7 +1,13 @@
-import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
+import type { Prisma } from "../../generated/prisma/client";
 import { PrismaService } from "../prisma.service";
-import { CreateTransactionDto } from "./dto/create-transaction.dto";
-import { UpdateTransactionDto } from "./dto/update-transaction.dto";
+import type { CreateTransactionDto } from "./dto/create-transaction.dto";
+import type { FilterTransactionDto } from "./dto/filter-transaction.dto";
+import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
 
 /**
  * Manages user income/expense transactions with category validation
@@ -44,21 +50,13 @@ export class TransactionsService {
 	/**
 	 * List transactions with optional filters (date range, category, type)
 	 */
-	async findAll(
-		userId: string,
-		filters?: {
-			dateFrom?: Date;
-			dateTo?: Date;
-			categoryId?: string;
-			type?: string;
-		},
-	) {
-		const where: any = { userId };
+	async findAll(userId: string, filters?: FilterTransactionDto) {
+		const where: Prisma.TransactionWhereInput = { userId };
 
 		if (filters?.dateFrom || filters?.dateTo) {
 			where.date = {};
-			if (filters.dateFrom) where.date.gte = filters.dateFrom;
-			if (filters.dateTo) where.date.lte = filters.dateTo;
+			if (filters.dateFrom) where.date.gte = new Date(filters.dateFrom);
+			if (filters.dateTo) where.date.lte = new Date(filters.dateTo);
 		}
 
 		if (filters?.categoryId) {
@@ -97,7 +95,11 @@ export class TransactionsService {
 	 * Update transaction with optional category change
 	 * @throws BadRequestException if new category doesn't belong to user
 	 */
-	async update(id: string, userId: string, updateTransactionDto: UpdateTransactionDto) {
+	async update(
+		id: string,
+		userId: string,
+		updateTransactionDto: UpdateTransactionDto,
+	) {
 		await this.findOne(id, userId);
 
 		// Validate category ownership if category is being changed
@@ -114,6 +116,7 @@ export class TransactionsService {
 			}
 		}
 
+		// biome-ignore lint/suspicious/noExplicitAny: necessário para permitir mutação do tipo date de string para Date
 		const data: any = { ...updateTransactionDto };
 		if (data.date) {
 			data.date = new Date(data.date);

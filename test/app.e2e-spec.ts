@@ -28,8 +28,6 @@ describe("AppController (e2e)", () => {
 	});
 
 	it("/private (GET) - requires authentication", () => {
-		return request(app.getHttpServer())
-			.get("/private")
-			.expect(401);
+		return request(app.getHttpServer()).get("/private").expect(401);
 	});
 });

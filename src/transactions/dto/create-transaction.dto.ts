@@ -1,6 +1,12 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsISO8601 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
+import {
+	IsEnum,
+	IsISO8601,
+	IsNumber,
+	IsOptional,
+	IsString,
+} from "class-validator";
 
 export enum TransactionType {
 	INCOME = "INCOME",

@@ -3,11 +3,11 @@ import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { auth } from "./lib/auth";
-import { CategoriesModule } from "./categories/categories.module";
-import { TransactionsModule } from "./transactions/transactions.module";
 import { BudgetsModule } from "./budgets/budgets.module";
+import { CategoriesModule } from "./categories/categories.module";
+import { auth } from "./lib/auth";
 import { ReportsModule } from "./reports/reports.module";
+import { TransactionsModule } from "./transactions/transactions.module";
 
 @Module({
 	imports: [

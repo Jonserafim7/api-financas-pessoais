@@ -16,11 +16,6 @@ describe("Categories (e2e)", () => {
 		color: "#FF5733",
 	};
 
-	// Simple Bearer token for testing (mocking auth)
-	const mockAuthHeader = {
-		Authorization: "Bearer mock-token",
-	};
-
 	beforeAll(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
@@ -41,9 +36,7 @@ describe("Categories (e2e)", () => {
 
 	describe("GET /categories - Protected Route", () => {
 		it("should require authentication", () => {
-			return request(app.getHttpServer())
-				.get("/categories")
-				.expect(401);
+			return request(app.getHttpServer()).get("/categories").expect(401);
 		});
 	});
 
@@ -58,9 +51,7 @@ describe("Categories (e2e)", () => {
 
 	describe("GET /public - Public Route", () => {
 		it("should allow anonymous access", () => {
-			return request(app.getHttpServer())
-				.get("/public")
-				.expect(200);
+			return request(app.getHttpServer()).get("/public").expect(200);
 		});
 	});
 });

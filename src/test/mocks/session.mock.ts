@@ -1,6 +1,8 @@
-import { UserSession } from "@thallesp/nestjs-better-auth";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
 
-export const createMockSession = (overrides?: Partial<UserSession>): UserSession => {
+export const createMockSession = (
+	overrides?: Partial<UserSession>,
+): UserSession => {
 	return {
 		user: {
 			id: "test-user-id-123",

@@ -1,11 +1,17 @@
 import { Controller, Get, Query } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
-import { Session, UserSession } from "@thallesp/nestjs-better-auth";
-import { ReportsService } from "./reports.service";
-import { SummaryReportDto } from "./dto/summary-report.dto";
-import { CategoryReportDto } from "./dto/category-report.dto";
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiQuery,
+	ApiResponse,
+	ApiTags,
+} from "@nestjs/swagger";
+import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { BudgetStatusReportDto } from "./dto/budget-status-report.dto";
+import { CategoryReportDto } from "./dto/category-report.dto";
+import { SummaryReportDto } from "./dto/summary-report.dto";
 import { TrendsReportDto } from "./dto/trends-report.dto";
+import { ReportsService } from "./reports.service";
 
 @Controller("reports")
 @ApiTags("Reports")
@@ -15,8 +21,16 @@ export class ReportsController {
 
 	@Get("summary")
 	@ApiOperation({ summary: "Obter resumo de receitas e despesas" })
-	@ApiQuery({ name: "dateFrom", required: false, description: "Data inicial (ISO 8601)" })
-	@ApiQuery({ name: "dateTo", required: false, description: "Data final (ISO 8601)" })
+	@ApiQuery({
+		name: "dateFrom",
+		required: false,
+		description: "Data inicial (ISO 8601)",
+	})
+	@ApiQuery({
+		name: "dateTo",
+		required: false,
+		description: "Data final (ISO 8601)",
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Resumo de finanças",
@@ -36,8 +50,16 @@ export class ReportsController {
 
 	@Get("by-category")
 	@ApiOperation({ summary: "Obter gastos agrupados por categoria" })
-	@ApiQuery({ name: "dateFrom", required: false, description: "Data inicial (ISO 8601)" })
-	@ApiQuery({ name: "dateTo", required: false, description: "Data final (ISO 8601)" })
+	@ApiQuery({
+		name: "dateFrom",
+		required: false,
+		description: "Data inicial (ISO 8601)",
+	})
+	@ApiQuery({
+		name: "dateTo",
+		required: false,
+		description: "Data final (ISO 8601)",
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Gastos por categoria",
@@ -57,8 +79,16 @@ export class ReportsController {
 
 	@Get("budget-status")
 	@ApiOperation({ summary: "Obter status dos orçamentos vs gastos reais" })
-	@ApiQuery({ name: "dateFrom", required: false, description: "Data inicial (ISO 8601)" })
-	@ApiQuery({ name: "dateTo", required: false, description: "Data final (ISO 8601)" })
+	@ApiQuery({
+		name: "dateFrom",
+		required: false,
+		description: "Data inicial (ISO 8601)",
+	})
+	@ApiQuery({
+		name: "dateTo",
+		required: false,
+		description: "Data final (ISO 8601)",
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Status dos orçamentos",
@@ -78,7 +108,11 @@ export class ReportsController {
 
 	@Get("trends")
 	@ApiOperation({ summary: "Obter tendência mensal de receitas e despesas" })
-	@ApiQuery({ name: "months", required: false, description: "Quantidade de meses a análisar (padrão: 6)" })
+	@ApiQuery({
+		name: "months",
+		required: false,
+		description: "Quantidade de meses a análisar (padrão: 6)",
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Tendência mensal",

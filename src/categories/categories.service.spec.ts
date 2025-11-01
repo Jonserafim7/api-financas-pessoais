@@ -1,11 +1,14 @@
-import { Test, TestingModule } from "@nestjs/testing";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
-import { CategoriesService } from "./categories.service";
+import { Test, type TestingModule } from "@nestjs/testing";
 import { PrismaService } from "../prisma.service";
-import { PrismaMock, createPrismaMock } from "../test/mocks/prisma.mock";
+import { createPrismaMock, type PrismaMock } from "../test/mocks/prisma.mock";
 import { TEST_USER_ID } from "../test/mocks/session.mock";
-import { CreateCategoryDto } from "./dto/create-category.dto";
-import { UpdateCategoryDto } from "./dto/update-category.dto";
+import { CategoriesService } from "./categories.service";
+import {
+	CategoryType,
+	type CreateCategoryDto,
+} from "./dto/create-category.dto";
+import type { UpdateCategoryDto } from "./dto/update-category.dto";
 
 describe("CategoriesService", () => {
 	let service: CategoriesService;
@@ -35,7 +38,7 @@ describe("CategoriesService", () => {
 		it("should create a new category", async () => {
 			const dto: CreateCategoryDto = {
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 				color: "#FF5733",
 			};
 
@@ -65,7 +68,7 @@ describe("CategoriesService", () => {
 		it("should use default color if not provided", async () => {
 			const dto: CreateCategoryDto = {
 				name: "Transporte",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 			};
 
 			const mockCategory = {
@@ -94,7 +97,7 @@ describe("CategoriesService", () => {
 		it("should throw BadRequestException if category name already exists", async () => {
 			const dto: CreateCategoryDto = {
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 			};
 
 			prisma.category.create.mockRejectedValue({
@@ -115,7 +118,7 @@ describe("CategoriesService", () => {
 					id: "cat-1",
 					userId: TEST_USER_ID,
 					name: "Alimentação",
-					type: "EXPENSE",
+					type: CategoryType.EXPENSE,
 					color: "#FF5733",
 					createdAt: new Date(),
 					updatedAt: new Date(),
@@ -124,7 +127,7 @@ describe("CategoriesService", () => {
 					id: "cat-2",
 					userId: TEST_USER_ID,
 					name: "Salário",
-					type: "INCOME",
+					type: CategoryType.INCOME,
 					color: "#00FF00",
 					createdAt: new Date(),
 					updatedAt: new Date(),
@@ -157,7 +160,7 @@ describe("CategoriesService", () => {
 				id: "cat-1",
 				userId: TEST_USER_ID,
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 				color: "#FF5733",
 				createdAt: new Date(),
 				updatedAt: new Date(),
@@ -176,9 +179,9 @@ describe("CategoriesService", () => {
 		it("should throw NotFoundException if category not found", async () => {
 			prisma.category.findFirst.mockResolvedValue(null);
 
-			await expect(service.findOne("non-existent", TEST_USER_ID)).rejects.toThrow(
-				NotFoundException,
-			);
+			await expect(
+				service.findOne("non-existent", TEST_USER_ID),
+			).rejects.toThrow(NotFoundException);
 		});
 	});
 
@@ -193,7 +196,7 @@ describe("CategoriesService", () => {
 				id: "cat-1",
 				userId: TEST_USER_ID,
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 				color: "#FF5733",
 				createdAt: new Date(),
 				updatedAt: new Date(),
@@ -228,7 +231,7 @@ describe("CategoriesService", () => {
 				id: "cat-1",
 				userId: TEST_USER_ID,
 				name: "Alimentação",
-				type: "EXPENSE",
+				type: CategoryType.EXPENSE,
 				color: "#FF5733",
 				createdAt: new Date(),
 				updatedAt: new Date(),
@@ -248,9 +251,9 @@ describe("CategoriesService", () => {
 		it("should throw NotFoundException if category not found for deletion", async () => {
 			prisma.category.findFirst.mockResolvedValue(null);
 
-			await expect(service.remove("non-existent", TEST_USER_ID)).rejects.toThrow(
-				NotFoundException,
-			);
+			await expect(
+				service.remove("non-existent", TEST_USER_ID),
+			).rejects.toThrow(NotFoundException);
 		});
 	});
 });

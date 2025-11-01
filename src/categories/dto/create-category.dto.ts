@@ -1,5 +1,5 @@
-import { IsString, IsEnum, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsEnum, IsOptional, IsString } from "class-validator";
 
 export enum CategoryType {
 	INCOME = "INCOME",

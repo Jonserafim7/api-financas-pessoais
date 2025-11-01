@@ -1,9 +1,13 @@
 import { Injectable } from "@nestjs/common";
+import type { Prisma } from "../../generated/prisma/client";
 import { PrismaService } from "../prisma.service";
-import { SummaryReportDto } from "./dto/summary-report.dto";
-import { CategoryReportDto } from "./dto/category-report.dto";
-import { BudgetStatusReportDto, BudgetStatusItemDto } from "./dto/budget-status-report.dto";
-import { TrendsReportDto } from "./dto/trends-report.dto";
+import type {
+	BudgetStatusItemDto,
+	BudgetStatusReportDto,
+} from "./dto/budget-status-report.dto";
+import type { CategoryReportDto } from "./dto/category-report.dto";
+import type { SummaryReportDto } from "./dto/summary-report.dto";
+import type { TrendsReportDto } from "./dto/trends-report.dto";
 
 /**
  * Generates financial analytics and reports for spending analysis
@@ -15,8 +19,12 @@ export class ReportsService {
 	/**
 	 * Calculate total income, expense, and balance for period
 	 */
-	async getSummary(userId: string, dateFrom?: Date, dateTo?: Date): Promise<SummaryReportDto> {
-		const where: any = { userId };
+	async getSummary(
+		userId: string,
+		dateFrom?: Date,
+		dateTo?: Date,
+	): Promise<SummaryReportDto> {
+		const where: Prisma.TransactionWhereInput = { userId };
 
 		if (dateFrom || dateTo) {
 			where.date = {};
@@ -51,8 +59,12 @@ export class ReportsService {
 	/**
 	 * Aggregate spending by category and type (income/expense)
 	 */
-	async getByCategory(userId: string, dateFrom?: Date, dateTo?: Date): Promise<CategoryReportDto> {
-		const where: any = { userId };
+	async getByCategory(
+		userId: string,
+		dateFrom?: Date,
+		dateTo?: Date,
+	): Promise<CategoryReportDto> {
+		const where: Prisma.TransactionWhereInput = { userId };
 
 		if (dateFrom || dateTo) {
 			where.date = {};
@@ -67,11 +79,18 @@ export class ReportsService {
 		});
 
 		// Group transactions by category name and type
-		const grouped = new Map<string, { total: number; count: number; type: string }>();
+		const grouped = new Map<
+			string,
+			{ total: number; count: number; type: string }
+		>();
 
 		for (const transaction of transactions) {
 			const key = `${transaction.category.name}-${transaction.type}`;
-			const current = grouped.get(key) || { total: 0, count: 0, type: transaction.type };
+			const current = grouped.get(key) || {
+				total: 0,
+				count: 0,
+				type: transaction.type,
+			};
 			current.total += Number(transaction.amount);
 			current.count++;
 			grouped.set(key, current);
@@ -95,13 +114,17 @@ export class ReportsService {
 	/**
 	 * Compare actual spending vs budget limits with status indicators
 	 */
-	async getBudgetStatus(userId: string, dateFrom?: Date, dateTo?: Date): Promise<BudgetStatusReportDto> {
+	async getBudgetStatus(
+		userId: string,
+		dateFrom?: Date,
+		dateTo?: Date,
+	): Promise<BudgetStatusReportDto> {
 		const budgets = await this.prisma.budget.findMany({
 			where: { userId },
 			include: { category: true },
 		});
 
-		const transactionWhere: any = { userId };
+		const transactionWhere: Prisma.TransactionWhereInput = { userId };
 
 		if (dateFrom || dateTo) {
 			transactionWhere.date = {};
@@ -120,7 +143,9 @@ export class ReportsService {
 			if (budget.categoryId) {
 				// Category-specific budget: sum expenses for this category only
 				spent = transactions
-					.filter((t) => t.categoryId === budget.categoryId && t.type === "EXPENSE")
+					.filter(
+						(t) => t.categoryId === budget.categoryId && t.type === "EXPENSE",
+					)
 					.reduce((sum, t) => sum + Number(t.amount), 0);
 			} else {
 				// Overall budget: sum all expenses
@@ -162,7 +187,10 @@ export class ReportsService {
 	/**
 	 * Calculate monthly income/expense trends for last N months
 	 */
-	async getTrends(userId: string, months: number = 6): Promise<TrendsReportDto> {
+	async getTrends(
+		userId: string,
+		months: number = 6,
+	): Promise<TrendsReportDto> {
 		const endDate = new Date();
 		const startDate = new Date();
 		startDate.setMonth(startDate.getMonth() - months + 1);
@@ -227,7 +255,9 @@ export class ReportsService {
 			return "Todas as datas";
 		}
 
-		const fromStr = dateFrom ? dateFrom.toISOString().split("T")[0] : "indefinido";
+		const fromStr = dateFrom
+			? dateFrom.toISOString().split("T")[0]
+			: "indefinido";
 		const toStr = dateTo ? dateTo.toISOString().split("T")[0] : "hoje";
 
 		return `${fromStr} a ${toStr}`;

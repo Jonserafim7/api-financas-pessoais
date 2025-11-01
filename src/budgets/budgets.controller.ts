@@ -1,10 +1,23 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
-import { Session, UserSession } from "@thallesp/nestjs-better-auth";
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	Put,
+} from "@nestjs/common";
+import {
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
+} from "@nestjs/swagger";
+import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { BudgetsService } from "./budgets.service";
-import { CreateBudgetDto } from "./dto/create-budget.dto";
-import { UpdateBudgetDto } from "./dto/update-budget.dto";
 import { BudgetResponseDto } from "./dto/budget-response.dto";
+import type { CreateBudgetDto } from "./dto/create-budget.dto";
+import type { UpdateBudgetDto } from "./dto/update-budget.dto";
 
 @Controller("budgets")
 @ApiTags("Budgets")
