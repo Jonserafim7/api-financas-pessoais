@@ -1,9 +1,10 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
+import { Decimal } from "@prisma/client/runtime/library";
 import { createMockSession, TEST_USER_ID } from "../test/mocks/session.mock";
 import {
-	TransactionType,
 	type CreateTransactionDto,
+	TransactionType,
 } from "./dto/create-transaction.dto";
 import type { FilterTransactionDto } from "./dto/filter-transaction.dto";
 import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
@@ -53,15 +54,21 @@ describe("TransactionsController", () => {
 				id: "trans-1",
 				userId: TEST_USER_ID,
 				categoryId: dto.categoryId,
-				amount: dto.amount,
-				description: dto.description,
+				amount: new Decimal(dto.amount),
+				description: dto.description ?? null,
 				date: new Date(dto.date),
 				type: dto.type,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			};
 
-			jest.spyOn(service, "create").mockResolvedValue(mockTransaction);
+			jest
+				.spyOn(service, "create")
+				.mockResolvedValue(
+					mockTransaction as unknown as Awaited<
+						ReturnType<typeof service.create>
+					>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.create(session, dto);
@@ -80,9 +87,7 @@ describe("TransactionsController", () => {
 
 			jest
 				.spyOn(service, "create")
-				.mockRejectedValue(
-					new BadRequestException("Categoria não encontrada"),
-				);
+				.mockRejectedValue(new BadRequestException("Categoria não encontrada"));
 
 			const session = createMockSession();
 
@@ -99,7 +104,7 @@ describe("TransactionsController", () => {
 					id: "trans-1",
 					userId: TEST_USER_ID,
 					categoryId: "cat-1",
-					amount: 150.5,
+					amount: new Decimal(150.5),
 					description: "Compra de supermercado",
 					date: new Date("2024-10-31"),
 					type: TransactionType.EXPENSE,
@@ -109,7 +114,7 @@ describe("TransactionsController", () => {
 						id: "cat-1",
 						userId: TEST_USER_ID,
 						name: "Alimentação",
-						type: "EXPENSE",
+						type: TransactionType.EXPENSE,
 						color: "#FF5733",
 						createdAt: new Date(),
 						updatedAt: new Date(),
@@ -117,7 +122,13 @@ describe("TransactionsController", () => {
 				},
 			];
 
-			jest.spyOn(service, "findAll").mockResolvedValue(mockTransactions);
+			jest
+				.spyOn(service, "findAll")
+				.mockResolvedValue(
+					mockTransactions as unknown as Awaited<
+						ReturnType<typeof service.findAll>
+					>,
+				);
 
 			const session = createMockSession();
 			const filters: FilterTransactionDto = {};
@@ -202,7 +213,7 @@ describe("TransactionsController", () => {
 				id: "trans-1",
 				userId: TEST_USER_ID,
 				categoryId: "cat-1",
-				amount: 150.5,
+				amount: new Decimal(150.5),
 				description: "Compra de supermercado",
 				date: new Date("2024-10-31"),
 				type: TransactionType.EXPENSE,
@@ -212,14 +223,20 @@ describe("TransactionsController", () => {
 					id: "cat-1",
 					userId: TEST_USER_ID,
 					name: "Alimentação",
-					type: "EXPENSE",
+					type: TransactionType.EXPENSE,
 					color: "#FF5733",
 					createdAt: new Date(),
 					updatedAt: new Date(),
 				},
 			};
 
-			jest.spyOn(service, "findOne").mockResolvedValue(mockTransaction);
+			jest
+				.spyOn(service, "findOne")
+				.mockResolvedValue(
+					mockTransaction as unknown as Awaited<
+						ReturnType<typeof service.findOne>
+					>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.findOne("trans-1", session);
@@ -231,15 +248,13 @@ describe("TransactionsController", () => {
 		it("should return 404 if transaction not found", async () => {
 			jest
 				.spyOn(service, "findOne")
-				.mockRejectedValue(
-					new NotFoundException("Transação não encontrada"),
-				);
+				.mockRejectedValue(new NotFoundException("Transação não encontrada"));
 
 			const session = createMockSession();
 
-			await expect(
-				controller.findOne("non-existent", session),
-			).rejects.toThrow(NotFoundException);
+			await expect(controller.findOne("non-existent", session)).rejects.toThrow(
+				NotFoundException,
+			);
 		});
 	});
 
@@ -254,7 +269,7 @@ describe("TransactionsController", () => {
 				id: "trans-1",
 				userId: TEST_USER_ID,
 				categoryId: "cat-1",
-				amount: 200,
+				amount: new Decimal(200),
 				description: "Compra atualizada",
 				date: new Date("2024-10-31"),
 				type: TransactionType.EXPENSE,
@@ -264,14 +279,20 @@ describe("TransactionsController", () => {
 					id: "cat-1",
 					userId: TEST_USER_ID,
 					name: "Alimentação",
-					type: "EXPENSE",
+					type: TransactionType.EXPENSE,
 					color: "#FF5733",
 					createdAt: new Date(),
 					updatedAt: new Date(),
 				},
 			};
 
-			jest.spyOn(service, "update").mockResolvedValue(mockTransaction);
+			jest
+				.spyOn(service, "update")
+				.mockResolvedValue(
+					mockTransaction as unknown as Awaited<
+						ReturnType<typeof service.update>
+					>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.update("trans-1", session, dto);
@@ -287,9 +308,7 @@ describe("TransactionsController", () => {
 
 			jest
 				.spyOn(service, "update")
-				.mockRejectedValue(
-					new NotFoundException("Transação não encontrada"),
-				);
+				.mockRejectedValue(new NotFoundException("Transação não encontrada"));
 
 			const session = createMockSession();
 
@@ -305,15 +324,13 @@ describe("TransactionsController", () => {
 
 			jest
 				.spyOn(service, "update")
-				.mockRejectedValue(
-					new BadRequestException("Categoria não encontrada"),
-				);
+				.mockRejectedValue(new BadRequestException("Categoria não encontrada"));
 
 			const session = createMockSession();
 
-			await expect(
-				controller.update("trans-1", session, dto),
-			).rejects.toThrow(BadRequestException);
+			await expect(controller.update("trans-1", session, dto)).rejects.toThrow(
+				BadRequestException,
+			);
 		});
 	});
 
@@ -323,7 +340,7 @@ describe("TransactionsController", () => {
 				id: "trans-1",
 				userId: TEST_USER_ID,
 				categoryId: "cat-1",
-				amount: 150.5,
+				amount: new Decimal(150.5),
 				description: "Compra de supermercado",
 				date: new Date("2024-10-31"),
 				type: TransactionType.EXPENSE,
@@ -331,7 +348,13 @@ describe("TransactionsController", () => {
 				updatedAt: new Date(),
 			};
 
-			jest.spyOn(service, "remove").mockResolvedValue(mockTransaction);
+			jest
+				.spyOn(service, "remove")
+				.mockResolvedValue(
+					mockTransaction as unknown as Awaited<
+						ReturnType<typeof service.remove>
+					>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.remove("trans-1", session);
@@ -343,16 +366,13 @@ describe("TransactionsController", () => {
 		it("should return 404 if transaction not found", async () => {
 			jest
 				.spyOn(service, "remove")
-				.mockRejectedValue(
-					new NotFoundException("Transação não encontrada"),
-				);
+				.mockRejectedValue(new NotFoundException("Transação não encontrada"));
 
 			const session = createMockSession();
 
-			await expect(
-				controller.remove("non-existent", session),
-			).rejects.toThrow(NotFoundException);
+			await expect(controller.remove("non-existent", session)).rejects.toThrow(
+				NotFoundException,
+			);
 		});
 	});
 });
-

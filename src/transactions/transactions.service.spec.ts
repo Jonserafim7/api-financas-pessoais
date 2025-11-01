@@ -4,8 +4,8 @@ import { PrismaService } from "../prisma.service";
 import { createPrismaMock, type PrismaMock } from "../test/mocks/prisma.mock";
 import { TEST_USER_ID } from "../test/mocks/session.mock";
 import {
-	TransactionType,
 	type CreateTransactionDto,
+	TransactionType,
 } from "./dto/create-transaction.dto";
 import type { FilterTransactionDto } from "./dto/filter-transaction.dto";
 import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
@@ -226,8 +226,9 @@ describe("TransactionsService", () => {
 		});
 
 		it("should filter transactions by dateFrom", async () => {
+			const dateFrom = "2024-10-01T00:00:00Z";
 			const filters: FilterTransactionDto = {
-				dateFrom: "2024-10-01T00:00:00Z",
+				dateFrom,
 			};
 
 			prisma.transaction.findMany.mockResolvedValue([]);
@@ -238,7 +239,7 @@ describe("TransactionsService", () => {
 				where: {
 					userId: TEST_USER_ID,
 					date: {
-						gte: new Date(filters.dateFrom),
+						gte: new Date(dateFrom),
 					},
 				},
 				orderBy: { date: "desc" },
@@ -247,8 +248,9 @@ describe("TransactionsService", () => {
 		});
 
 		it("should filter transactions by dateTo", async () => {
+			const dateTo = "2024-10-31T23:59:59Z";
 			const filters: FilterTransactionDto = {
-				dateTo: "2024-10-31T23:59:59Z",
+				dateTo,
 			};
 
 			prisma.transaction.findMany.mockResolvedValue([]);
@@ -259,7 +261,7 @@ describe("TransactionsService", () => {
 				where: {
 					userId: TEST_USER_ID,
 					date: {
-						lte: new Date(filters.dateTo),
+						lte: new Date(dateTo),
 					},
 				},
 				orderBy: { date: "desc" },
@@ -268,9 +270,11 @@ describe("TransactionsService", () => {
 		});
 
 		it("should filter transactions by date range", async () => {
+			const dateFrom = "2024-10-01T00:00:00Z";
+			const dateTo = "2024-10-31T23:59:59Z";
 			const filters: FilterTransactionDto = {
-				dateFrom: "2024-10-01T00:00:00Z",
-				dateTo: "2024-10-31T23:59:59Z",
+				dateFrom,
+				dateTo,
 			};
 
 			prisma.transaction.findMany.mockResolvedValue([]);
@@ -281,8 +285,8 @@ describe("TransactionsService", () => {
 				where: {
 					userId: TEST_USER_ID,
 					date: {
-						gte: new Date(filters.dateFrom),
-						lte: new Date(filters.dateTo),
+						gte: new Date(dateFrom),
+						lte: new Date(dateTo),
 					},
 				},
 				orderBy: { date: "desc" },
@@ -329,9 +333,11 @@ describe("TransactionsService", () => {
 		});
 
 		it("should apply multiple filters combined", async () => {
+			const dateFrom = "2024-10-01T00:00:00Z";
+			const dateTo = "2024-10-31T23:59:59Z";
 			const filters: FilterTransactionDto = {
-				dateFrom: "2024-10-01T00:00:00Z",
-				dateTo: "2024-10-31T23:59:59Z",
+				dateFrom,
+				dateTo,
 				categoryId: "cat-1",
 				type: TransactionType.EXPENSE,
 			};
@@ -344,8 +350,8 @@ describe("TransactionsService", () => {
 				where: {
 					userId: TEST_USER_ID,
 					date: {
-						gte: new Date(filters.dateFrom),
-						lte: new Date(filters.dateTo),
+						gte: new Date(dateFrom),
+						lte: new Date(dateTo),
 					},
 					categoryId: "cat-1",
 					type: TransactionType.EXPENSE,
@@ -504,8 +510,9 @@ describe("TransactionsService", () => {
 		});
 
 		it("should update transaction date", async () => {
+			const newDate = "2024-11-01T20:00:00Z";
 			const dto: UpdateTransactionDto = {
-				date: "2024-11-01T20:00:00Z",
+				date: newDate,
 			};
 
 			const mockTransaction = {
@@ -524,14 +531,14 @@ describe("TransactionsService", () => {
 			prisma.transaction.findFirst.mockResolvedValue(mockTransaction);
 			prisma.transaction.update.mockResolvedValue({
 				...mockTransaction,
-				date: new Date(dto.date),
+				date: new Date(newDate),
 			});
 
 			await service.update("trans-1", TEST_USER_ID, dto);
 
 			expect(prisma.transaction.update).toHaveBeenCalledWith({
 				where: { id: "trans-1" },
-				data: { date: new Date(dto.date) },
+				data: { date: new Date(newDate) },
 				include: { category: true },
 			});
 		});
@@ -608,4 +615,3 @@ describe("TransactionsService", () => {
 		});
 	});
 });
-

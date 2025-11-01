@@ -141,7 +141,9 @@ describe("ReportsController", () => {
 				period: "Todas as datas",
 			};
 
-			jest.spyOn(service, "getByCategory").mockResolvedValue(mockCategoryReport);
+			jest
+				.spyOn(service, "getByCategory")
+				.mockResolvedValue(mockCategoryReport);
 
 			const session = createMockSession();
 			const result = await controller.getByCategory(session);
@@ -160,7 +162,9 @@ describe("ReportsController", () => {
 				period: "2024-10-01 a hoje",
 			};
 
-			jest.spyOn(service, "getByCategory").mockResolvedValue(mockCategoryReport);
+			jest
+				.spyOn(service, "getByCategory")
+				.mockResolvedValue(mockCategoryReport);
 
 			const session = createMockSession();
 			const dateFrom = "2024-10-01T00:00:00Z";
@@ -180,15 +184,13 @@ describe("ReportsController", () => {
 				period: "indefinido a 2024-10-31",
 			};
 
-			jest.spyOn(service, "getByCategory").mockResolvedValue(mockCategoryReport);
+			jest
+				.spyOn(service, "getByCategory")
+				.mockResolvedValue(mockCategoryReport);
 
 			const session = createMockSession();
 			const dateTo = "2024-10-31T23:59:59Z";
-			const result = await controller.getByCategory(
-				session,
-				undefined,
-				dateTo,
-			);
+			const result = await controller.getByCategory(session, undefined, dateTo);
 
 			expect(result).toEqual(mockCategoryReport);
 			expect(service.getByCategory).toHaveBeenCalledWith(
@@ -204,16 +206,14 @@ describe("ReportsController", () => {
 				period: "2024-10-01 a 2024-10-31",
 			};
 
-			jest.spyOn(service, "getByCategory").mockResolvedValue(mockCategoryReport);
+			jest
+				.spyOn(service, "getByCategory")
+				.mockResolvedValue(mockCategoryReport);
 
 			const session = createMockSession();
 			const dateFrom = "2024-10-01T00:00:00Z";
 			const dateTo = "2024-10-31T23:59:59Z";
-			const result = await controller.getByCategory(
-				session,
-				dateFrom,
-				dateTo,
-			);
+			const result = await controller.getByCategory(session, dateFrom, dateTo);
 
 			expect(result).toEqual(mockCategoryReport);
 			expect(service.getByCategory).toHaveBeenCalledWith(
@@ -398,4 +398,3 @@ describe("ReportsController", () => {
 		});
 	});
 });
-

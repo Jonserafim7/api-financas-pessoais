@@ -1,12 +1,11 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
+import { Decimal } from "@prisma/client/runtime/library";
 import { createMockSession, TEST_USER_ID } from "../test/mocks/session.mock";
+import { TransactionType } from "../transactions/dto/create-transaction.dto";
 import { BudgetsController } from "./budgets.controller";
 import { BudgetsService } from "./budgets.service";
-import {
-	BudgetPeriod,
-	type CreateBudgetDto,
-} from "./dto/create-budget.dto";
+import { BudgetPeriod, type CreateBudgetDto } from "./dto/create-budget.dto";
 import type { UpdateBudgetDto } from "./dto/update-budget.dto";
 
 describe("BudgetsController", () => {
@@ -51,16 +50,20 @@ describe("BudgetsController", () => {
 			const mockBudget = {
 				id: "budget-1",
 				userId: TEST_USER_ID,
-				categoryId: dto.categoryId,
-				amount: dto.amount,
+				categoryId: dto.categoryId as string,
+				amount: new Decimal(dto.amount),
 				period: dto.period,
 				startDate: new Date(dto.startDate),
-				endDate: new Date(dto.endDate),
+				endDate: dto.endDate ? new Date(dto.endDate) : null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			};
 
-			jest.spyOn(service, "create").mockResolvedValue(mockBudget);
+			jest
+				.spyOn(service, "create")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.create>>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.create(session, dto);
@@ -79,9 +82,7 @@ describe("BudgetsController", () => {
 
 			jest
 				.spyOn(service, "create")
-				.mockRejectedValue(
-					new BadRequestException("Categoria não encontrada"),
-				);
+				.mockRejectedValue(new BadRequestException("Categoria não encontrada"));
 
 			const session = createMockSession();
 
@@ -112,6 +113,70 @@ describe("BudgetsController", () => {
 				BadRequestException,
 			);
 		});
+
+		it("should create budget with zero amount", async () => {
+			const dto: CreateBudgetDto = {
+				amount: 0,
+				period: BudgetPeriod.MONTHLY,
+				startDate: "2024-01-01T00:00:00Z",
+			};
+
+			const mockBudget = {
+				id: "budget-zero",
+				userId: TEST_USER_ID,
+				categoryId: null,
+				amount: new Decimal(0),
+				period: dto.period,
+				startDate: new Date(dto.startDate),
+				endDate: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			jest
+				.spyOn(service, "create")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.create>>,
+				);
+
+			const session = createMockSession();
+			const result = await controller.create(session, dto);
+
+			expect(result).toEqual(mockBudget);
+			expect(service.create).toHaveBeenCalledWith(TEST_USER_ID, dto);
+		});
+
+		it("should create budget with very large amount", async () => {
+			const dto: CreateBudgetDto = {
+				amount: 999999999.99,
+				period: BudgetPeriod.YEARLY,
+				startDate: "2024-01-01T00:00:00Z",
+			};
+
+			const mockBudget = {
+				id: "budget-large",
+				userId: TEST_USER_ID,
+				categoryId: null,
+				amount: new Decimal(999999999.99),
+				period: dto.period,
+				startDate: new Date(dto.startDate),
+				endDate: null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			jest
+				.spyOn(service, "create")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.create>>,
+				);
+
+			const session = createMockSession();
+			const result = await controller.create(session, dto);
+
+			expect(result).toEqual(mockBudget);
+			expect(service.create).toHaveBeenCalledWith(TEST_USER_ID, dto);
+		});
 	});
 
 	describe("GET /budgets", () => {
@@ -121,7 +186,7 @@ describe("BudgetsController", () => {
 					id: "budget-1",
 					userId: TEST_USER_ID,
 					categoryId: "cat-1",
-					amount: 1000,
+					amount: new Decimal(1000),
 					period: BudgetPeriod.MONTHLY,
 					startDate: new Date("2024-01-01"),
 					endDate: new Date("2024-12-31"),
@@ -131,7 +196,7 @@ describe("BudgetsController", () => {
 						id: "cat-1",
 						userId: TEST_USER_ID,
 						name: "Alimentação",
-						type: "EXPENSE",
+						type: TransactionType.EXPENSE,
 						color: "#FF5733",
 						createdAt: new Date(),
 						updatedAt: new Date(),
@@ -139,7 +204,11 @@ describe("BudgetsController", () => {
 				},
 			];
 
-			jest.spyOn(service, "findAll").mockResolvedValue(mockBudgets);
+			jest
+				.spyOn(service, "findAll")
+				.mockResolvedValue(
+					mockBudgets as unknown as Awaited<ReturnType<typeof service.findAll>>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.findAll(session);
@@ -165,7 +234,7 @@ describe("BudgetsController", () => {
 				id: "budget-1",
 				userId: TEST_USER_ID,
 				categoryId: "cat-1",
-				amount: 1000,
+				amount: new Decimal(1000),
 				period: BudgetPeriod.MONTHLY,
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-12-31"),
@@ -175,14 +244,18 @@ describe("BudgetsController", () => {
 					id: "cat-1",
 					userId: TEST_USER_ID,
 					name: "Alimentação",
-					type: "EXPENSE",
+					type: TransactionType.EXPENSE,
 					color: "#FF5733",
 					createdAt: new Date(),
 					updatedAt: new Date(),
 				},
 			};
 
-			jest.spyOn(service, "findOne").mockResolvedValue(mockBudget);
+			jest
+				.spyOn(service, "findOne")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.findOne>>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.findOne("budget-1", session);
@@ -194,9 +267,7 @@ describe("BudgetsController", () => {
 		it("should return 404 if budget not found", async () => {
 			jest
 				.spyOn(service, "findOne")
-				.mockRejectedValue(
-					new NotFoundException("Orçamento não encontrado"),
-				);
+				.mockRejectedValue(new NotFoundException("Orçamento não encontrado"));
 
 			const session = createMockSession();
 
@@ -217,7 +288,7 @@ describe("BudgetsController", () => {
 				id: "budget-1",
 				userId: TEST_USER_ID,
 				categoryId: "cat-1",
-				amount: 1500,
+				amount: new Decimal(1500),
 				period: BudgetPeriod.WEEKLY,
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-12-31"),
@@ -227,20 +298,28 @@ describe("BudgetsController", () => {
 					id: "cat-1",
 					userId: TEST_USER_ID,
 					name: "Alimentação",
-					type: "EXPENSE",
+					type: TransactionType.EXPENSE,
 					color: "#FF5733",
 					createdAt: new Date(),
 					updatedAt: new Date(),
 				},
 			};
 
-			jest.spyOn(service, "update").mockResolvedValue(mockBudget);
+			jest
+				.spyOn(service, "update")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.update>>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.update("budget-1", session, dto);
 
 			expect(result).toEqual(mockBudget);
-			expect(service.update).toHaveBeenCalledWith("budget-1", TEST_USER_ID, dto);
+			expect(service.update).toHaveBeenCalledWith(
+				"budget-1",
+				TEST_USER_ID,
+				dto,
+			);
 		});
 
 		it("should return 404 if budget not found", async () => {
@@ -250,9 +329,7 @@ describe("BudgetsController", () => {
 
 			jest
 				.spyOn(service, "update")
-				.mockRejectedValue(
-					new NotFoundException("Orçamento não encontrado"),
-				);
+				.mockRejectedValue(new NotFoundException("Orçamento não encontrado"));
 
 			const session = createMockSession();
 
@@ -268,15 +345,77 @@ describe("BudgetsController", () => {
 
 			jest
 				.spyOn(service, "update")
+				.mockRejectedValue(new BadRequestException("Categoria não encontrada"));
+
+			const session = createMockSession();
+
+			await expect(controller.update("budget-1", session, dto)).rejects.toThrow(
+				BadRequestException,
+			);
+		});
+
+		it("should return 400 if updating dates with invalid range", async () => {
+			const dto: UpdateBudgetDto = {
+				startDate: "2024-12-31T00:00:00Z",
+				endDate: "2024-01-01T00:00:00Z",
+			};
+
+			jest
+				.spyOn(service, "update")
 				.mockRejectedValue(
-					new BadRequestException("Categoria não encontrada"),
+					new BadRequestException(
+						"Data de término deve ser posterior à data de início",
+					),
 				);
 
 			const session = createMockSession();
 
-			await expect(
-				controller.update("budget-1", session, dto),
-			).rejects.toThrow(BadRequestException);
+			await expect(controller.update("budget-1", session, dto)).rejects.toThrow(
+				BadRequestException,
+			);
+		});
+
+		it("should update budget with zero amount", async () => {
+			const dto: UpdateBudgetDto = {
+				amount: 0,
+			};
+
+			const mockBudget = {
+				id: "budget-1",
+				userId: TEST_USER_ID,
+				categoryId: "cat-1",
+				amount: new Decimal(0),
+				period: BudgetPeriod.MONTHLY,
+				startDate: new Date("2024-01-01"),
+				endDate: new Date("2024-12-31"),
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				category: {
+					id: "cat-1",
+					userId: TEST_USER_ID,
+					name: "Alimentação",
+					type: TransactionType.EXPENSE,
+					color: "#FF5733",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			};
+
+			jest
+				.spyOn(service, "update")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.update>>,
+				);
+
+			const session = createMockSession();
+			const result = await controller.update("budget-1", session, dto);
+
+			expect(result).toEqual(mockBudget);
+			expect(service.update).toHaveBeenCalledWith(
+				"budget-1",
+				TEST_USER_ID,
+				dto,
+			);
 		});
 	});
 
@@ -286,7 +425,7 @@ describe("BudgetsController", () => {
 				id: "budget-1",
 				userId: TEST_USER_ID,
 				categoryId: "cat-1",
-				amount: 1000,
+				amount: new Decimal(1000),
 				period: BudgetPeriod.MONTHLY,
 				startDate: new Date("2024-01-01"),
 				endDate: new Date("2024-12-31"),
@@ -294,7 +433,11 @@ describe("BudgetsController", () => {
 				updatedAt: new Date(),
 			};
 
-			jest.spyOn(service, "remove").mockResolvedValue(mockBudget);
+			jest
+				.spyOn(service, "remove")
+				.mockResolvedValue(
+					mockBudget as unknown as Awaited<ReturnType<typeof service.remove>>,
+				);
 
 			const session = createMockSession();
 			const result = await controller.remove("budget-1", session);
@@ -306,16 +449,13 @@ describe("BudgetsController", () => {
 		it("should return 404 if budget not found", async () => {
 			jest
 				.spyOn(service, "remove")
-				.mockRejectedValue(
-					new NotFoundException("Orçamento não encontrado"),
-				);
+				.mockRejectedValue(new NotFoundException("Orçamento não encontrado"));
 
 			const session = createMockSession();
 
-			await expect(
-				controller.remove("non-existent", session),
-			).rejects.toThrow(NotFoundException);
+			await expect(controller.remove("non-existent", session)).rejects.toThrow(
+				NotFoundException,
+			);
 		});
 	});
 });
-
