@@ -8,6 +8,7 @@ export enum CategoryType {
 
 export class CreateCategoryDto {
 	@ApiProperty({
+		type: String,
 		description: "Nome da categoria",
 		example: "Alimentação",
 	})
@@ -23,6 +24,7 @@ export class CreateCategoryDto {
 	type: CategoryType;
 
 	@ApiProperty({
+		type: String,
 		description: "Cor da categoria (hexadecimal)",
 		example: "#FF5733",
 		required: false,

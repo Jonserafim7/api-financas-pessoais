@@ -7,6 +7,7 @@ import { TransactionType } from "./create-transaction.dto";
  */
 export class FilterTransactionDto {
 	@ApiProperty({
+		type: String,
 		description: "Data inicial (ISO 8601)",
 		example: "2024-10-31T00:00:00Z",
 		required: false,
@@ -16,6 +17,7 @@ export class FilterTransactionDto {
 	dateFrom?: string;
 
 	@ApiProperty({
+		type: String,
 		description: "Data final (ISO 8601)",
 		example: "2024-10-31T23:59:59Z",
 		required: false,
@@ -25,7 +27,9 @@ export class FilterTransactionDto {
 	dateTo?: string;
 
 	@ApiProperty({
+		type: String,
 		description: "Filtrar por categoria",
+		example: "clyt5m3v90000jpf0z0z0z0z0",
 		required: false,
 	})
 	@IsOptional()

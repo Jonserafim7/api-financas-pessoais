@@ -15,6 +15,7 @@ export enum TransactionType {
 
 export class CreateTransactionDto {
 	@ApiProperty({
+		type: String,
 		description: "ID da categoria",
 		example: "clyt5m3v90000jpf0z0z0z0z0",
 	})
@@ -22,6 +23,7 @@ export class CreateTransactionDto {
 	categoryId: string;
 
 	@ApiProperty({
+		type: Number,
 		description: "Valor da transação",
 		example: 150.5,
 	})
@@ -30,6 +32,7 @@ export class CreateTransactionDto {
 	amount: number;
 
 	@ApiProperty({
+		type: String,
 		description: "Descrição da transação",
 		example: "Compra de supermercado",
 		required: false,
@@ -39,6 +42,7 @@ export class CreateTransactionDto {
 	description?: string;
 
 	@ApiProperty({
+		type: String,
 		description: "Data da transação (ISO 8601)",
 		example: "2024-10-31T20:00:00Z",
 	})
