@@ -67,14 +67,20 @@ export class CategoriesService {
 
 	/**
 	 * Update category with unique name validation
-	 * @throws BadRequestException if new name already exists
+	 * @throws BadRequestException if new name already exists or if category is system category
 	 */
 	async update(
 		id: string,
 		userId: string,
 		updateCategoryDto: UpdateCategoryDto,
 	) {
-		await this.findOne(id, userId);
+		const category = await this.findOne(id, userId);
+
+		if (category.isSystem) {
+			throw new BadRequestException(
+				"Categorias do sistema não podem ser modificadas",
+			);
+		}
 
 		try {
 			return await this.prisma.category.update({
@@ -92,13 +98,46 @@ export class CategoriesService {
 	}
 
 	/**
-	 * Delete category (cascades to transactions)
+	 * Delete category and reassign transactions to "Não Categorizado"
+	 * @throws BadRequestException if category is system category
 	 */
 	async remove(id: string, userId: string) {
-		await this.findOne(id, userId);
+		const category = await this.findOne(id, userId);
 
-		return await this.prisma.category.delete({
-			where: { id },
+		if (category.isSystem) {
+			throw new BadRequestException(
+				"Categorias do sistema não podem ser removidas",
+			);
+		}
+
+		// Find the appropriate uncategorized category based on type
+		const uncategorizedCategory = await this.prisma.category.findFirst({
+			where: {
+				userId,
+				isSystem: true,
+				type: category.type,
+				name: category.type === "INCOME"
+					? "Não Categorizado (Receita)"
+					: "Não Categorizado (Despesa)",
+			},
+		});
+
+		if (!uncategorizedCategory) {
+			throw new BadRequestException(
+				"Categoria de sistema para reatribuição não encontrada",
+			);
+		}
+
+		// Reassign transactions to uncategorized category, then delete category
+		return await this.prisma.$transaction(async (tx) => {
+			await tx.transaction.updateMany({
+				where: { categoryId: id },
+				data: { categoryId: uncategorizedCategory.id },
+			});
+
+			return await tx.category.delete({
+				where: { id },
+			});
 		});
 	}
 }
