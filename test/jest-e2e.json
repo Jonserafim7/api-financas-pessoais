@@ -4,12 +4,7 @@
 	"testEnvironment": "node",
 	"testRegex": ".e2e-spec.ts$",
 	"transform": {
-		"^.+\\.(t|j)s$": "ts-jest"
-	},
-	"transformIgnorePatterns": [
-		"node_modules/(?!(better-auth|@better-auth|@thallesp|jose|@noble|@panva)/)"
-	],
-	"moduleNameMapper": {
-		"^jose/(.*)$": "jose"
+	  "^.+\\.(t|j)s$": "ts-jest"
 	}
-}
+  }
+  
