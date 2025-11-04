@@ -1,21 +1,33 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import {
 	ApiBearerAuth,
+	ApiExtraModels,
 	ApiOperation,
 	ApiQuery,
 	ApiResponse,
 	ApiTags,
 } from "@nestjs/swagger";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
-import { BudgetStatusReportDto } from "./dto/budget-status-report.dto";
-import { CategoryReportDto } from "./dto/category-report.dto";
+import {
+	BudgetStatusItemDto,
+	BudgetStatusReportDto,
+} from "./dto/budget-status-report.dto";
+import {
+	CategoryReportDto,
+	CategoryReportItemDto,
+} from "./dto/category-report.dto";
 import { SummaryReportDto } from "./dto/summary-report.dto";
-import { TrendsReportDto } from "./dto/trends-report.dto";
+import { TrendMonthDto, TrendsReportDto } from "./dto/trends-report.dto";
 import { ReportsService } from "./reports.service";
 
 @Controller("reports")
 @ApiTags("Reports")
 @ApiBearerAuth()
+@ApiExtraModels(
+	CategoryReportItemDto,
+	BudgetStatusItemDto,
+	TrendMonthDto,
+)
 export class ReportsController {
 	constructor(private readonly reportsService: ReportsService) {}
 

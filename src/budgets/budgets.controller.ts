@@ -10,6 +10,7 @@ import {
 import {
 	ApiBearerAuth,
 	ApiOperation,
+	ApiParam,
 	ApiResponse,
 	ApiTags,
 } from "@nestjs/swagger";
@@ -53,6 +54,11 @@ export class BudgetsController {
 
 	@Get(":id")
 	@ApiOperation({ summary: "Obter orçamento por ID" })
+	@ApiParam({
+		name: "id",
+		description: "ID do orçamento",
+		type: String,
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Orçamento encontrado",
@@ -65,6 +71,11 @@ export class BudgetsController {
 
 	@Put(":id")
 	@ApiOperation({ summary: "Atualizar orçamento" })
+	@ApiParam({
+		name: "id",
+		description: "ID do orçamento",
+		type: String,
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Orçamento atualizado com sucesso",
@@ -82,6 +93,11 @@ export class BudgetsController {
 
 	@Delete(":id")
 	@ApiOperation({ summary: "Deletar orçamento" })
+	@ApiParam({
+		name: "id",
+		description: "ID do orçamento",
+		type: String,
+	})
 	@ApiResponse({ status: 200, description: "Orçamento deletado com sucesso" })
 	@ApiResponse({ status: 404, description: "Orçamento não encontrado" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {

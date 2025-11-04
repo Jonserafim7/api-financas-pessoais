@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { CategoryResponseDto } from "../../categories/dto/category-response.dto";
 
 export class TransactionResponseDto {
 	@ApiProperty({
@@ -51,6 +52,12 @@ export class TransactionResponseDto {
 		example: "EXPENSE",
 	})
 	type: string;
+
+	@ApiProperty({
+		type: () => CategoryResponseDto,
+		description: "Categoria da transação",
+	})
+	category: CategoryResponseDto;
 
 	@ApiProperty({
 		type: Date,

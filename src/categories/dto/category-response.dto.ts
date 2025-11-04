@@ -10,6 +10,13 @@ export class CategoryResponseDto {
 
 	@ApiProperty({
 		type: String,
+		description: "ID do usuário",
+		example: "user_123",
+	})
+	userId: string;
+
+	@ApiProperty({
+		type: String,
 		description: "Nome da categoria",
 		example: "Alimentação",
 	})
@@ -29,6 +36,13 @@ export class CategoryResponseDto {
 		example: "#FF5733",
 	})
 	color: string;
+
+	@ApiProperty({
+		type: Boolean,
+		description: "Indica se é uma categoria do sistema",
+		example: false,
+	})
+	isSystem: boolean;
 
 	@ApiProperty({
 		type: Date,

@@ -33,18 +33,19 @@ export class TransactionsService {
 			throw new BadRequestException("Categoria não encontrada");
 		}
 
-		const transaction = await this.prisma.transaction.create({
-			data: {
-				userId,
-				categoryId: createTransactionDto.categoryId,
-				amount: createTransactionDto.amount,
-				description: createTransactionDto.description,
-				date: new Date(createTransactionDto.date),
-				type: createTransactionDto.type,
-			},
-		});
+	const transaction = await this.prisma.transaction.create({
+		data: {
+			userId,
+			categoryId: createTransactionDto.categoryId,
+			amount: createTransactionDto.amount,
+			description: createTransactionDto.description,
+			date: new Date(createTransactionDto.date),
+			type: createTransactionDto.type,
+		},
+		include: { category: true },
+	});
 
-		return transaction;
+	return transaction;
 	}
 
 	/**

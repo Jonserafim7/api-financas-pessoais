@@ -10,11 +10,15 @@ import {
 } from "@nestjs/common";
 import {
 	ApiBearerAuth,
+	ApiExtraModels,
 	ApiOperation,
+	ApiParam,
+	ApiQuery,
 	ApiResponse,
 	ApiTags,
 } from "@nestjs/swagger";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
+import { CategoryResponseDto } from "../categories/dto/category-response.dto";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { FilterTransactionDto } from "./dto/filter-transaction.dto";
 import { TransactionResponseDto } from "./dto/transaction-response.dto";
@@ -24,6 +28,7 @@ import { TransactionsService } from "./transactions.service";
 @Controller("transactions")
 @ApiTags("Transactions")
 @ApiBearerAuth()
+@ApiExtraModels(CategoryResponseDto)
 export class TransactionsController {
 	constructor(private readonly transactionsService: TransactionsService) {}
 
@@ -49,6 +54,30 @@ export class TransactionsController {
 	@ApiOperation({
 		summary: "Listar transações do usuário com filtros opcionais",
 	})
+	@ApiQuery({
+		name: "dateFrom",
+		required: false,
+		description: "Data inicial (ISO 8601)",
+		type: String,
+	})
+	@ApiQuery({
+		name: "dateTo",
+		required: false,
+		description: "Data final (ISO 8601)",
+		type: String,
+	})
+	@ApiQuery({
+		name: "categoryId",
+		required: false,
+		description: "Filtrar por categoria",
+		type: String,
+	})
+	@ApiQuery({
+		name: "type",
+		required: false,
+		description: "Filtrar por tipo",
+		enum: ["INCOME", "EXPENSE"],
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Lista de transações",
@@ -67,6 +96,11 @@ export class TransactionsController {
 
 	@Get(":id")
 	@ApiOperation({ summary: "Obter transação por ID" })
+	@ApiParam({
+		name: "id",
+		description: "ID da transação",
+		type: String,
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Transação encontrada",
@@ -79,6 +113,11 @@ export class TransactionsController {
 
 	@Put(":id")
 	@ApiOperation({ summary: "Atualizar transação" })
+	@ApiParam({
+		name: "id",
+		description: "ID da transação",
+		type: String,
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Transação atualizada com sucesso",
@@ -100,6 +139,11 @@ export class TransactionsController {
 
 	@Delete(":id")
 	@ApiOperation({ summary: "Deletar transação" })
+	@ApiParam({
+		name: "id",
+		description: "ID da transação",
+		type: String,
+	})
 	@ApiResponse({ status: 200, description: "Transação deletada com sucesso" })
 	@ApiResponse({ status: 404, description: "Transação não encontrada" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {

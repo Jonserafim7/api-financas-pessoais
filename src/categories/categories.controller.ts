@@ -10,6 +10,7 @@ import {
 import {
 	ApiBearerAuth,
 	ApiOperation,
+	ApiParam,
 	ApiResponse,
 	ApiTags,
 } from "@nestjs/swagger";
@@ -56,6 +57,11 @@ export class CategoriesController {
 
 	@Get(":id")
 	@ApiOperation({ summary: "Obter categoria por ID" })
+	@ApiParam({
+		name: "id",
+		description: "ID da categoria",
+		type: String,
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Categoria encontrada",
@@ -68,6 +74,11 @@ export class CategoriesController {
 
 	@Put(":id")
 	@ApiOperation({ summary: "Atualizar categoria" })
+	@ApiParam({
+		name: "id",
+		description: "ID da categoria",
+		type: String,
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Categoria atualizada com sucesso",
@@ -92,6 +103,11 @@ export class CategoriesController {
 
 	@Delete(":id")
 	@ApiOperation({ summary: "Deletar categoria" })
+	@ApiParam({
+		name: "id",
+		description: "ID da categoria",
+		type: String,
+	})
 	@ApiResponse({ status: 200, description: "Categoria deletada com sucesso" })
 	@ApiResponse({ status: 404, description: "Categoria não encontrada" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {
