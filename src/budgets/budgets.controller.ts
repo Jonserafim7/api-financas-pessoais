@@ -16,8 +16,8 @@ import {
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { BudgetsService } from "./budgets.service";
 import { BudgetResponseDto } from "./dto/budget-response.dto";
-import type { CreateBudgetDto } from "./dto/create-budget.dto";
-import type { UpdateBudgetDto } from "./dto/update-budget.dto";
+import { CreateBudgetDto } from "./dto/create-budget.dto";
+import { UpdateBudgetDto } from "./dto/update-budget.dto";
 
 @Controller("budgets")
 @ApiTags("Budgets")

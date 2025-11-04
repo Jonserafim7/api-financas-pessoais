@@ -15,10 +15,10 @@ import {
 	ApiTags,
 } from "@nestjs/swagger";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
-import type { CreateTransactionDto } from "./dto/create-transaction.dto";
-import type { FilterTransactionDto } from "./dto/filter-transaction.dto";
+import { CreateTransactionDto } from "./dto/create-transaction.dto";
+import { FilterTransactionDto } from "./dto/filter-transaction.dto";
 import { TransactionResponseDto } from "./dto/transaction-response.dto";
-import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
+import { UpdateTransactionDto } from "./dto/update-transaction.dto";
 import { TransactionsService } from "./transactions.service";
 
 @Controller("transactions")

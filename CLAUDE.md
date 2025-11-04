@@ -121,6 +121,27 @@ Controllers use decorators for auto-documentation:
 
 ## Key Patterns
 
+### TypeScript Imports in Controllers
+
+**CRITICAL**: Always use regular imports (not `import type`) for DTOs in controllers:
+
+```typescript
+// ✅ CORRECT: Regular import (class available at runtime)
+import { CreateCategoryDto } from "./dto/create-category.dto";
+
+// ❌ WRONG: Type-only import (erased at runtime, breaks validation)
+import type { CreateCategoryDto } from "./dto/create-category.dto";
+```
+
+**Why**: NestJS's `ValidationPipe` needs the actual DTO class at runtime to:
+1. Instantiate the DTO
+2. Read validation decorators (`@IsString()`, `@IsEnum()`, etc.)
+3. Apply validation rules
+
+Type-only imports are erased during TypeScript compilation, causing validation to fail with errors like "property X should not exist".
+
+**When to use `type` imports**: Only for types/interfaces that are never used as values (e.g., `type UserSession`).
+
 ### User-Scoped Queries
 All queries must filter by `userId` to enforce multi-tenancy:
 ```typescript

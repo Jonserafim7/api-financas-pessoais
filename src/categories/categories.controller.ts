@@ -16,8 +16,8 @@ import {
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { CategoriesService } from "./categories.service";
 import { CategoryResponseDto } from "./dto/category-response.dto";
-import type { CreateCategoryDto } from "./dto/create-category.dto";
-import type { UpdateCategoryDto } from "./dto/update-category.dto";
+import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UpdateCategoryDto } from "./dto/update-category.dto";
 
 @Controller("categories")
 @ApiTags("Categories")
