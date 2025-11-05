@@ -112,7 +112,9 @@ export async function seedUserCategories(
 			})),
 		});
 
-		console.log(`✓ Seeded ${allCategories.length} categories for user ${userId}`);
+		console.log(
+			`✓ Seeded ${allCategories.length} categories for user ${userId}`,
+		);
 	} catch (error) {
 		console.error(`✗ Failed to seed categories for user ${userId}:`, error);
 		// Don't throw - signup should not fail due to category seeding

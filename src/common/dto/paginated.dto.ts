@@ -24,4 +24,3 @@ export class PaginatedDto<TData> {
 
 	results: TData[];
 }
-

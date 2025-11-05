@@ -85,9 +85,7 @@ export class BudgetsService {
 			include: { category: true },
 		});
 
-		this.logger.debug(
-			`Found ${budgets.length} budgets for userId: ${userId}`,
-		);
+		this.logger.debug(`Found ${budgets.length} budgets for userId: ${userId}`);
 		return budgets;
 	}
 
@@ -104,9 +102,7 @@ export class BudgetsService {
 		});
 
 		if (!budget) {
-			this.logger.warn(
-				`Budget not found - id: ${id}, userId: ${userId}`,
-			);
+			this.logger.warn(`Budget not found - id: ${id}, userId: ${userId}`);
 			throw new NotFoundException("Orçamento não encontrado");
 		}
 

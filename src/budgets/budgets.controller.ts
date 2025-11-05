@@ -112,9 +112,7 @@ export class BudgetsController {
 	@ApiResponse({ status: 200, description: "Orçamento deletado com sucesso" })
 	@ApiResponse({ status: 404, description: "Orçamento não encontrado" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {
-		this.logger.debug(
-			`DELETE /budgets/${id} - userId: ${session.user.id}`,
-		);
+		this.logger.debug(`DELETE /budgets/${id} - userId: ${session.user.id}`);
 		return this.budgetsService.remove(id, session.user.id);
 	}
 }

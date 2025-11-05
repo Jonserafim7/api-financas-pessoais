@@ -23,11 +23,7 @@ import { ReportsService } from "./reports.service";
 @Controller("reports")
 @ApiTags("Reports")
 @ApiBearerAuth()
-@ApiExtraModels(
-	CategoryReportItemDto,
-	BudgetStatusItemDto,
-	TrendMonthDto,
-)
+@ApiExtraModels(CategoryReportItemDto, BudgetStatusItemDto, TrendMonthDto)
 export class ReportsController {
 	private readonly logger = new Logger(ReportsController.name);
 
