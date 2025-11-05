@@ -7,11 +7,13 @@ import {
 	Param,
 	Post,
 	Put,
+	Query,
 } from "@nestjs/common";
 import {
 	ApiBearerAuth,
 	ApiOperation,
 	ApiParam,
+	ApiQuery,
 	ApiResponse,
 	ApiTags,
 } from "@nestjs/swagger";
@@ -19,6 +21,7 @@ import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { CategoriesService } from "./categories.service";
 import { CategoryResponseDto } from "./dto/category-response.dto";
 import { CreateCategoryDto } from "./dto/create-category.dto";
+import { FindAllCategoriesQueryDto } from "./dto/find-all-categories-query.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 
 @Controller("categories")
@@ -52,14 +55,25 @@ export class CategoriesController {
 
 	@Get()
 	@ApiOperation({ summary: "Listar todas as categorias do usuário" })
+	@ApiQuery({
+		name: "type",
+		enum: ["INCOME", "EXPENSE"],
+		required: false,
+		description: "Filtrar categorias por tipo",
+	})
 	@ApiResponse({
 		status: 200,
 		description: "Lista de categorias",
 		type: [CategoryResponseDto],
 	})
-	async findAll(@Session() session: UserSession) {
-		this.logger.debug(`GET /categories - userId: ${session.user.id}`);
-		return this.categoriesService.findAll(session.user.id);
+	async findAll(
+		@Session() session: UserSession,
+		@Query() query: FindAllCategoriesQueryDto,
+	) {
+		this.logger.debug(
+			`GET /categories - userId: ${session.user.id}, type: ${query.type || "all"}`,
+		);
+		return this.categoriesService.findAll(session.user.id, query.type);
 	}
 
 	@Get(":id")

@@ -53,11 +53,17 @@ export class CategoriesService {
 
 	/**
 	 * List all user categories ordered by creation date
+	 * @param type Optional filter by category type (INCOME or EXPENSE)
 	 */
-	async findAll(userId: string) {
-		this.logger.debug(`Fetching all categories for userId: ${userId}`);
+	async findAll(userId: string, type?: "INCOME" | "EXPENSE") {
+		this.logger.debug(
+			`Fetching categories for userId: ${userId}, type: ${type || "all"}`,
+		);
 		const categories = await this.prisma.category.findMany({
-			where: { userId },
+			where: {
+				userId,
+				...(type && { type }),
+			},
 			orderBy: { createdAt: "desc" },
 		});
 		this.logger.debug(
@@ -71,17 +77,13 @@ export class CategoriesService {
 	 * @throws NotFoundException if not found
 	 */
 	async findOne(id: string, userId: string) {
-		this.logger.debug(
-			`Fetching category - id: ${id}, userId: ${userId}`,
-		);
+		this.logger.debug(`Fetching category - id: ${id}, userId: ${userId}`);
 		const category = await this.prisma.category.findFirst({
 			where: { id, userId },
 		});
 
 		if (!category) {
-			this.logger.warn(
-				`Category not found - id: ${id}, userId: ${userId}`,
-			);
+			this.logger.warn(`Category not found - id: ${id}, userId: ${userId}`);
 			throw new NotFoundException("Categoria não encontrada");
 		}
 
@@ -98,9 +100,7 @@ export class CategoriesService {
 		userId: string,
 		updateCategoryDto: UpdateCategoryDto,
 	) {
-		this.logger.debug(
-			`Updating category - id: ${id}, userId: ${userId}`,
-		);
+		this.logger.debug(`Updating category - id: ${id}, userId: ${userId}`);
 		const category = await this.findOne(id, userId);
 
 		if (category.isSystem) {
@@ -138,9 +138,7 @@ export class CategoriesService {
 	 * @throws BadRequestException if category is system category
 	 */
 	async remove(id: string, userId: string) {
-		this.logger.debug(
-			`Deleting category - id: ${id}, userId: ${userId}`,
-		);
+		this.logger.debug(`Deleting category - id: ${id}, userId: ${userId}`);
 		const category = await this.findOne(id, userId);
 
 		if (category.isSystem) {
@@ -161,9 +159,10 @@ export class CategoriesService {
 				userId,
 				isSystem: true,
 				type: category.type,
-				name: category.type === "INCOME"
-					? "Não Categorizado (Receita)"
-					: "Não Categorizado (Despesa)",
+				name:
+					category.type === "INCOME"
+						? "Não Categorizado (Receita)"
+						: "Não Categorizado (Despesa)",
 			},
 		});
 
