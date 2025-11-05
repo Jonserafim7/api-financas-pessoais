@@ -20,6 +20,8 @@ import {
 } from "@nestjs/swagger";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
 import { CategoryResponseDto } from "../categories/dto/category-response.dto";
+import { ApiPaginatedResponse } from "../common/decorators/api-paginated-response.decorator";
+import { PaginatedDto } from "../common/dto/paginated.dto";
 import { CreateTransactionDto } from "./dto/create-transaction.dto";
 import { FilterTransactionDto } from "./dto/filter-transaction.dto";
 import { TransactionResponseDto } from "./dto/transaction-response.dto";
@@ -29,7 +31,7 @@ import { TransactionsService } from "./transactions.service";
 @Controller("transactions")
 @ApiTags("Transactions")
 @ApiBearerAuth()
-@ApiExtraModels(CategoryResponseDto)
+@ApiExtraModels(CategoryResponseDto, PaginatedDto)
 export class TransactionsController {
 	private readonly logger = new Logger(TransactionsController.name);
 
@@ -58,7 +60,7 @@ export class TransactionsController {
 
 	@Get()
 	@ApiOperation({
-		summary: "Listar transações do usuário com filtros opcionais",
+		summary: "Listar transações do usuário com filtros opcionais e paginação",
 	})
 	@ApiQuery({
 		name: "dateFrom",
@@ -84,11 +86,21 @@ export class TransactionsController {
 		description: "Filtrar por tipo",
 		enum: ["INCOME", "EXPENSE"],
 	})
-	@ApiResponse({
-		status: 200,
-		description: "Lista de transações",
-		type: [TransactionResponseDto],
+	@ApiQuery({
+		name: "limit",
+		required: false,
+		description: "Número de itens por página (padrão: 20, máx: 100)",
+		type: Number,
+		example: 20,
 	})
+	@ApiQuery({
+		name: "offset",
+		required: false,
+		description: "Número de itens a pular (padrão: 0)",
+		type: Number,
+		example: 0,
+	})
+	@ApiPaginatedResponse(TransactionResponseDto)
 	@ApiResponse({
 		status: 400,
 		description: "Datas inválidas (ISO 8601 required)",
@@ -96,7 +108,7 @@ export class TransactionsController {
 	async findAll(
 		@Session() session: UserSession,
 		@Query() filters: FilterTransactionDto,
-	) {
+	): Promise<PaginatedDto<unknown>> {
 		const filterStr = Object.entries(filters || {})
 			.filter(([_, v]) => v !== undefined)
 			.map(([k, v]) => `${k}=${v}`)
@@ -121,9 +133,7 @@ export class TransactionsController {
 	})
 	@ApiResponse({ status: 404, description: "Transação não encontrada" })
 	async findOne(@Param("id") id: string, @Session() session: UserSession) {
-		this.logger.debug(
-			`GET /transactions/${id} - userId: ${session.user.id}`,
-		);
+		this.logger.debug(`GET /transactions/${id} - userId: ${session.user.id}`);
 		return this.transactionsService.findOne(id, session.user.id);
 	}
 

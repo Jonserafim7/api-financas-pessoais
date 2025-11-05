@@ -1,5 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsISO8601, IsOptional, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import {
+	IsEnum,
+	IsISO8601,
+	IsNumber,
+	IsOptional,
+	IsString,
+	Max,
+	Min,
+} from "class-validator";
 import { TransactionType } from "./create-transaction.dto";
 
 /**
@@ -44,4 +53,32 @@ export class FilterTransactionDto {
 	@IsOptional()
 	@IsEnum(TransactionType)
 	type?: TransactionType;
+
+	@ApiProperty({
+		description: "Número de itens por página",
+		example: 20,
+		required: false,
+		default: 20,
+		minimum: 1,
+		maximum: 100,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsNumber()
+	@Min(1)
+	@Max(100)
+	limit?: number = 20;
+
+	@ApiProperty({
+		description: "Número de itens a pular",
+		example: 0,
+		required: false,
+		default: 0,
+		minimum: 0,
+	})
+	@IsOptional()
+	@Type(() => Number)
+	@IsNumber()
+	@Min(0)
+	offset?: number = 0;
 }

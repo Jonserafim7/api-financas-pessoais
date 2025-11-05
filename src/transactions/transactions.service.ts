@@ -5,6 +5,7 @@ import {
 	NotFoundException,
 } from "@nestjs/common";
 import type { Prisma } from "../../generated/prisma/client";
+import { PaginatedDto } from "../common/dto/paginated.dto";
 import { PrismaService } from "../prisma.service";
 import type { CreateTransactionDto } from "./dto/create-transaction.dto";
 import type { FilterTransactionDto } from "./dto/filter-transaction.dto";
@@ -43,28 +44,31 @@ export class TransactionsService {
 			throw new BadRequestException("Categoria não encontrada");
 		}
 
-	const transaction = await this.prisma.transaction.create({
-		data: {
-			userId,
-			categoryId: createTransactionDto.categoryId,
-			amount: createTransactionDto.amount,
-			description: createTransactionDto.description,
-			date: new Date(createTransactionDto.date),
-			type: createTransactionDto.type,
-		},
-		include: { category: true },
-	});
+		const transaction = await this.prisma.transaction.create({
+			data: {
+				userId,
+				categoryId: createTransactionDto.categoryId,
+				amount: createTransactionDto.amount,
+				description: createTransactionDto.description,
+				date: new Date(createTransactionDto.date),
+				type: createTransactionDto.type,
+			},
+			include: { category: true },
+		});
 
-	this.logger.debug(`Transaction created successfully: ${transaction.id}`);
-	return transaction;
+		this.logger.debug(`Transaction created successfully: ${transaction.id}`);
+		return transaction;
 	}
 
 	/**
-	 * List transactions with optional filters (date range, category, type)
+	 * List transactions with optional filters (date range, category, type) and pagination
 	 */
 	async findAll(userId: string, filters?: FilterTransactionDto) {
+		const limit = filters?.limit ?? 20;
+		const offset = filters?.offset ?? 0;
+
 		this.logger.debug(
-			`Fetching transactions for userId: ${userId}, filters: ${JSON.stringify(filters || {})}`,
+			`Fetching transactions for userId: ${userId}, filters: ${JSON.stringify(filters || {})}, limit: ${limit}, offset: ${offset}`,
 		);
 
 		const where: Prisma.TransactionWhereInput = { userId };
@@ -83,16 +87,28 @@ export class TransactionsService {
 			where.type = filters.type;
 		}
 
-		const transactions = await this.prisma.transaction.findMany({
-			where,
-			orderBy: { date: "desc" },
-			include: { category: true },
-		});
+		// Execute count and data queries in parallel
+		const [total, transactions] = await Promise.all([
+			this.prisma.transaction.count({ where }),
+			this.prisma.transaction.findMany({
+				where,
+				orderBy: { date: "desc" },
+				include: { category: true },
+				skip: offset,
+				take: limit,
+			}),
+		]);
 
 		this.logger.debug(
-			`Found ${transactions.length} transactions for userId: ${userId}`,
+			`Found ${transactions.length} of ${total} transactions for userId: ${userId}`,
 		);
-		return transactions;
+
+		return {
+			total,
+			limit,
+			offset,
+			results: transactions,
+		} as PaginatedDto<(typeof transactions)[0]>;
 	}
 
 	/**
@@ -100,9 +116,7 @@ export class TransactionsService {
 	 * @throws NotFoundException if not found
 	 */
 	async findOne(id: string, userId: string) {
-		this.logger.debug(
-			`Fetching transaction - id: ${id}, userId: ${userId}`,
-		);
+		this.logger.debug(`Fetching transaction - id: ${id}, userId: ${userId}`);
 
 		const transaction = await this.prisma.transaction.findFirst({
 			where: { id, userId },
@@ -110,9 +124,7 @@ export class TransactionsService {
 		});
 
 		if (!transaction) {
-			this.logger.warn(
-				`Transaction not found - id: ${id}, userId: ${userId}`,
-			);
+			this.logger.warn(`Transaction not found - id: ${id}, userId: ${userId}`);
 			throw new NotFoundException("Transação não encontrada");
 		}
 
@@ -129,9 +141,7 @@ export class TransactionsService {
 		userId: string,
 		updateTransactionDto: UpdateTransactionDto,
 	) {
-		this.logger.debug(
-			`Updating transaction - id: ${id}, userId: ${userId}`,
-		);
+		this.logger.debug(`Updating transaction - id: ${id}, userId: ${userId}`);
 
 		await this.findOne(id, userId);
 
@@ -172,9 +182,7 @@ export class TransactionsService {
 	 * Delete transaction
 	 */
 	async remove(id: string, userId: string) {
-		this.logger.debug(
-			`Deleting transaction - id: ${id}, userId: ${userId}`,
-		);
+		this.logger.debug(`Deleting transaction - id: ${id}, userId: ${userId}`);
 
 		await this.findOne(id, userId);
 
