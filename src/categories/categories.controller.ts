@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Logger,
 	Param,
 	Post,
 	Put,
@@ -24,6 +25,8 @@ import { UpdateCategoryDto } from "./dto/update-category.dto";
 @ApiTags("Categories")
 @ApiBearerAuth()
 export class CategoriesController {
+	private readonly logger = new Logger(CategoriesController.name);
+
 	constructor(private readonly categoriesService: CategoriesService) {}
 
 	@Post()
@@ -41,6 +44,9 @@ export class CategoriesController {
 		@Session() session: UserSession,
 		@Body() createCategoryDto: CreateCategoryDto,
 	) {
+		this.logger.debug(
+			`POST /categories - userId: ${session.user.id}, name: ${createCategoryDto.name}`,
+		);
 		return this.categoriesService.create(session.user.id, createCategoryDto);
 	}
 
@@ -52,6 +58,7 @@ export class CategoriesController {
 		type: [CategoryResponseDto],
 	})
 	async findAll(@Session() session: UserSession) {
+		this.logger.debug(`GET /categories - userId: ${session.user.id}`);
 		return this.categoriesService.findAll(session.user.id);
 	}
 
@@ -69,6 +76,7 @@ export class CategoriesController {
 	})
 	@ApiResponse({ status: 404, description: "Categoria não encontrada" })
 	async findOne(@Param("id") id: string, @Session() session: UserSession) {
+		this.logger.debug(`GET /categories/${id} - userId: ${session.user.id}`);
 		return this.categoriesService.findOne(id, session.user.id);
 	}
 
@@ -94,6 +102,9 @@ export class CategoriesController {
 		@Session() session: UserSession,
 		@Body() updateCategoryDto: UpdateCategoryDto,
 	) {
+		this.logger.debug(
+			`PUT /categories/${id} - userId: ${session.user.id}, fields: ${Object.keys(updateCategoryDto).join(", ")}`,
+		);
 		return this.categoriesService.update(
 			id,
 			session.user.id,
@@ -111,6 +122,7 @@ export class CategoriesController {
 	@ApiResponse({ status: 200, description: "Categoria deletada com sucesso" })
 	@ApiResponse({ status: 404, description: "Categoria não encontrada" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {
+		this.logger.debug(`DELETE /categories/${id} - userId: ${session.user.id}`);
 		return this.categoriesService.remove(id, session.user.id);
 	}
 }

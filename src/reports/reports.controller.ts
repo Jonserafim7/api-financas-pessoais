@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Logger, Query } from "@nestjs/common";
 import {
 	ApiBearerAuth,
 	ApiExtraModels,
@@ -29,6 +29,8 @@ import { ReportsService } from "./reports.service";
 	TrendMonthDto,
 )
 export class ReportsController {
+	private readonly logger = new Logger(ReportsController.name);
+
 	constructor(private readonly reportsService: ReportsService) {}
 
 	@Get("summary")
@@ -53,6 +55,9 @@ export class ReportsController {
 		@Query("dateFrom") dateFrom?: string,
 		@Query("dateTo") dateTo?: string,
 	) {
+		this.logger.debug(
+			`GET /reports/summary - userId: ${session.user.id}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
 		return this.reportsService.getSummary(
 			session.user.id,
 			dateFrom ? new Date(dateFrom) : undefined,
@@ -82,6 +87,9 @@ export class ReportsController {
 		@Query("dateFrom") dateFrom?: string,
 		@Query("dateTo") dateTo?: string,
 	) {
+		this.logger.debug(
+			`GET /reports/by-category - userId: ${session.user.id}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
 		return this.reportsService.getByCategory(
 			session.user.id,
 			dateFrom ? new Date(dateFrom) : undefined,
@@ -111,6 +119,9 @@ export class ReportsController {
 		@Query("dateFrom") dateFrom?: string,
 		@Query("dateTo") dateTo?: string,
 	) {
+		this.logger.debug(
+			`GET /reports/budget-status - userId: ${session.user.id}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
 		return this.reportsService.getBudgetStatus(
 			session.user.id,
 			dateFrom ? new Date(dateFrom) : undefined,
@@ -135,6 +146,9 @@ export class ReportsController {
 		@Query("months") months?: string,
 	) {
 		const monthsNum = months ? parseInt(months, 10) : 6;
+		this.logger.debug(
+			`GET /reports/trends - userId: ${session.user.id}, months: ${monthsNum}`,
+		);
 		return this.reportsService.getTrends(session.user.id, monthsNum);
 	}
 }

@@ -1,6 +1,7 @@
 import {
 	BadRequestException,
 	Injectable,
+	Logger,
 	NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
@@ -12,6 +13,8 @@ import type { UpdateBudgetDto } from "./dto/update-budget.dto";
  */
 @Injectable()
 export class BudgetsService {
+	private readonly logger = new Logger(BudgetsService.name);
+
 	constructor(private prisma: PrismaService) {}
 
 	/**
@@ -19,6 +22,10 @@ export class BudgetsService {
 	 * @throws BadRequestException if category not found or endDate invalid
 	 */
 	async create(userId: string, createBudgetDto: CreateBudgetDto) {
+		this.logger.debug(
+			`Creating budget for userId: ${userId}, categoryId: ${createBudgetDto.categoryId || "overall"}, amount: ${createBudgetDto.amount}, period: ${createBudgetDto.period}, startDate: ${createBudgetDto.startDate}, endDate: ${createBudgetDto.endDate || "null"}`,
+		);
+
 		// Ensure category belongs to user (optional)
 		if (createBudgetDto.categoryId) {
 			const category = await this.prisma.category.findFirst({
@@ -29,6 +36,9 @@ export class BudgetsService {
 			});
 
 			if (!category) {
+				this.logger.warn(
+					`Category not found for budget - userId: ${userId}, categoryId: ${createBudgetDto.categoryId}`,
+				);
 				throw new BadRequestException("Categoria não encontrada");
 			}
 		}
@@ -40,6 +50,9 @@ export class BudgetsService {
 			: null;
 
 		if (endDate && endDate <= startDate) {
+			this.logger.warn(
+				`Invalid date range for budget - userId: ${userId}, startDate: ${startDate}, endDate: ${endDate}`,
+			);
 			throw new BadRequestException(
 				"Data de término deve ser posterior à data de início",
 			);
@@ -56,6 +69,7 @@ export class BudgetsService {
 			},
 		});
 
+		this.logger.debug(`Budget created successfully: ${budget.id}`);
 		return budget;
 	}
 
@@ -63,11 +77,18 @@ export class BudgetsService {
 	 * List all user budgets with category details
 	 */
 	async findAll(userId: string) {
-		return this.prisma.budget.findMany({
+		this.logger.debug(`Fetching all budgets for userId: ${userId}`);
+
+		const budgets = await this.prisma.budget.findMany({
 			where: { userId },
 			orderBy: { createdAt: "desc" },
 			include: { category: true },
 		});
+
+		this.logger.debug(
+			`Found ${budgets.length} budgets for userId: ${userId}`,
+		);
+		return budgets;
 	}
 
 	/**
@@ -75,15 +96,21 @@ export class BudgetsService {
 	 * @throws NotFoundException if not found
 	 */
 	async findOne(id: string, userId: string) {
+		this.logger.debug(`Fetching budget - id: ${id}, userId: ${userId}`);
+
 		const budget = await this.prisma.budget.findFirst({
 			where: { id, userId },
 			include: { category: true },
 		});
 
 		if (!budget) {
+			this.logger.warn(
+				`Budget not found - id: ${id}, userId: ${userId}`,
+			);
 			throw new NotFoundException("Orçamento não encontrado");
 		}
 
+		this.logger.debug(`Budget found: ${budget.id}`);
 		return budget;
 	}
 
@@ -92,6 +119,8 @@ export class BudgetsService {
 	 * @throws BadRequestException if date/category validation fails
 	 */
 	async update(id: string, userId: string, updateBudgetDto: UpdateBudgetDto) {
+		this.logger.debug(`Updating budget - id: ${id}, userId: ${userId}`);
+
 		await this.findOne(id, userId);
 
 		// Validate category ownership if changing category
@@ -104,6 +133,9 @@ export class BudgetsService {
 			});
 
 			if (!category) {
+				this.logger.warn(
+					`Category not found on budget update - id: ${id}, userId: ${userId}, categoryId: ${updateBudgetDto.categoryId}`,
+				);
 				throw new BadRequestException("Categoria não encontrada");
 			}
 		}
@@ -124,32 +156,46 @@ export class BudgetsService {
 					where: { id },
 				});
 				if (current && data.endDate <= current.startDate) {
+					this.logger.warn(
+						`Invalid date range on budget update - id: ${id}, userId: ${userId}, endDate: ${data.endDate}, current startDate: ${current.startDate}`,
+					);
 					throw new BadRequestException(
 						"Data de término deve ser posterior à data de início",
 					);
 				}
 			} else if (data.endDate <= data.startDate) {
+				this.logger.warn(
+					`Invalid date range on budget update - id: ${id}, userId: ${userId}, startDate: ${data.startDate}, endDate: ${data.endDate}`,
+				);
 				throw new BadRequestException(
 					"Data de término deve ser posterior à data de início",
 				);
 			}
 		}
 
-		return await this.prisma.budget.update({
+		const updated = await this.prisma.budget.update({
 			where: { id },
 			data,
 			include: { category: true },
 		});
+
+		this.logger.debug(`Budget updated successfully: ${id}`);
+		return updated;
 	}
 
 	/**
 	 * Delete budget
 	 */
 	async remove(id: string, userId: string) {
+		this.logger.debug(`Deleting budget - id: ${id}, userId: ${userId}`);
+
 		await this.findOne(id, userId);
 
-		return await this.prisma.budget.delete({
+		const deleted = await this.prisma.budget.delete({
 			where: { id },
 		});
+
+		this.logger.debug(`Budget deleted successfully: ${id}`);
+		return deleted;
 	}
 }

@@ -1,6 +1,7 @@
 import {
 	BadRequestException,
 	Injectable,
+	Logger,
 	NotFoundException,
 } from "@nestjs/common";
 import type { Prisma } from "../../generated/prisma/client";
@@ -14,6 +15,8 @@ import type { UpdateTransactionDto } from "./dto/update-transaction.dto";
  */
 @Injectable()
 export class TransactionsService {
+	private readonly logger = new Logger(TransactionsService.name);
+
 	constructor(private prisma: PrismaService) {}
 
 	/**
@@ -21,6 +24,10 @@ export class TransactionsService {
 	 * @throws BadRequestException if category not found or doesn't belong to user
 	 */
 	async create(userId: string, createTransactionDto: CreateTransactionDto) {
+		this.logger.debug(
+			`Creating transaction for userId: ${userId}, type: ${createTransactionDto.type}, amount: ${createTransactionDto.amount}, categoryId: ${createTransactionDto.categoryId}, description: ${createTransactionDto.description}`,
+		);
+
 		// Ensure category belongs to user before creating transaction
 		const category = await this.prisma.category.findFirst({
 			where: {
@@ -30,6 +37,9 @@ export class TransactionsService {
 		});
 
 		if (!category) {
+			this.logger.warn(
+				`Category not found for transaction - userId: ${userId}, categoryId: ${createTransactionDto.categoryId}`,
+			);
 			throw new BadRequestException("Categoria não encontrada");
 		}
 
@@ -45,6 +55,7 @@ export class TransactionsService {
 		include: { category: true },
 	});
 
+	this.logger.debug(`Transaction created successfully: ${transaction.id}`);
 	return transaction;
 	}
 
@@ -52,6 +63,10 @@ export class TransactionsService {
 	 * List transactions with optional filters (date range, category, type)
 	 */
 	async findAll(userId: string, filters?: FilterTransactionDto) {
+		this.logger.debug(
+			`Fetching transactions for userId: ${userId}, filters: ${JSON.stringify(filters || {})}`,
+		);
+
 		const where: Prisma.TransactionWhereInput = { userId };
 
 		if (filters?.dateFrom || filters?.dateTo) {
@@ -68,11 +83,16 @@ export class TransactionsService {
 			where.type = filters.type;
 		}
 
-		return this.prisma.transaction.findMany({
+		const transactions = await this.prisma.transaction.findMany({
 			where,
 			orderBy: { date: "desc" },
 			include: { category: true },
 		});
+
+		this.logger.debug(
+			`Found ${transactions.length} transactions for userId: ${userId}`,
+		);
+		return transactions;
 	}
 
 	/**
@@ -80,15 +100,23 @@ export class TransactionsService {
 	 * @throws NotFoundException if not found
 	 */
 	async findOne(id: string, userId: string) {
+		this.logger.debug(
+			`Fetching transaction - id: ${id}, userId: ${userId}`,
+		);
+
 		const transaction = await this.prisma.transaction.findFirst({
 			where: { id, userId },
 			include: { category: true },
 		});
 
 		if (!transaction) {
+			this.logger.warn(
+				`Transaction not found - id: ${id}, userId: ${userId}`,
+			);
 			throw new NotFoundException("Transação não encontrada");
 		}
 
+		this.logger.debug(`Transaction found: ${transaction.id}`);
 		return transaction;
 	}
 
@@ -101,6 +129,10 @@ export class TransactionsService {
 		userId: string,
 		updateTransactionDto: UpdateTransactionDto,
 	) {
+		this.logger.debug(
+			`Updating transaction - id: ${id}, userId: ${userId}`,
+		);
+
 		await this.findOne(id, userId);
 
 		// Validate category ownership if category is being changed
@@ -113,6 +145,9 @@ export class TransactionsService {
 			});
 
 			if (!category) {
+				this.logger.warn(
+					`Category not found on update - id: ${id}, userId: ${userId}, categoryId: ${updateTransactionDto.categoryId}`,
+				);
 				throw new BadRequestException("Categoria não encontrada");
 			}
 		}
@@ -123,21 +158,31 @@ export class TransactionsService {
 			data.date = new Date(data.date);
 		}
 
-		return await this.prisma.transaction.update({
+		const updated = await this.prisma.transaction.update({
 			where: { id },
 			data,
 			include: { category: true },
 		});
+
+		this.logger.debug(`Transaction updated successfully: ${id}`);
+		return updated;
 	}
 
 	/**
 	 * Delete transaction
 	 */
 	async remove(id: string, userId: string) {
+		this.logger.debug(
+			`Deleting transaction - id: ${id}, userId: ${userId}`,
+		);
+
 		await this.findOne(id, userId);
 
-		return await this.prisma.transaction.delete({
+		const deleted = await this.prisma.transaction.delete({
 			where: { id },
 		});
+
+		this.logger.debug(`Transaction deleted successfully: ${id}`);
+		return deleted;
 	}
 }

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import type { Prisma } from "../../generated/prisma/client";
 import { PrismaService } from "../prisma.service";
 import type {
@@ -14,6 +14,8 @@ import type { TrendsReportDto } from "./dto/trends-report.dto";
  */
 @Injectable()
 export class ReportsService {
+	private readonly logger = new Logger(ReportsService.name);
+
 	constructor(private prisma: PrismaService) {}
 
 	/**
@@ -24,6 +26,10 @@ export class ReportsService {
 		dateFrom?: Date,
 		dateTo?: Date,
 	): Promise<SummaryReportDto> {
+		this.logger.debug(
+			`Generating summary report for userId: ${userId}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
+
 		const where: Prisma.TransactionWhereInput = { userId };
 
 		if (dateFrom || dateTo) {
@@ -46,6 +52,10 @@ export class ReportsService {
 
 		const balance = totalIncome - totalExpense;
 
+		this.logger.debug(
+			`Summary calculated - income: ${totalIncome}, expense: ${totalExpense}, balance: ${balance}`,
+		);
+
 		const periodStr = this.getPeriodString(dateFrom, dateTo);
 
 		return {
@@ -64,6 +74,10 @@ export class ReportsService {
 		dateFrom?: Date,
 		dateTo?: Date,
 	): Promise<CategoryReportDto> {
+		this.logger.debug(
+			`Generating by-category report for userId: ${userId}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
+
 		const where: Prisma.TransactionWhereInput = { userId };
 
 		if (dateFrom || dateTo) {
@@ -103,6 +117,10 @@ export class ReportsService {
 			count: value.count,
 		}));
 
+		this.logger.debug(
+			`By-category report generated - ${data.length} categories, ${transactions.length} transactions`,
+		);
+
 		const periodStr = this.getPeriodString(dateFrom, dateTo);
 
 		return {
@@ -119,6 +137,10 @@ export class ReportsService {
 		dateFrom?: Date,
 		dateTo?: Date,
 	): Promise<BudgetStatusReportDto> {
+		this.logger.debug(
+			`Generating budget status report for userId: ${userId}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
+
 		const budgets = await this.prisma.budget.findMany({
 			where: { userId },
 			include: { category: true },
@@ -176,6 +198,18 @@ export class ReportsService {
 			};
 		});
 
+		const statusSummary = data.reduce(
+			(acc, item) => {
+				acc[item.status]++;
+				return acc;
+			},
+			{ ok: 0, warning: 0, exceeded: 0 },
+		);
+
+		this.logger.debug(
+			`Budget status report generated - ${budgets.length} budgets analyzed, statuses: ok=${statusSummary.ok}, warning=${statusSummary.warning}, exceeded=${statusSummary.exceeded}`,
+		);
+
 		const periodStr = this.getPeriodString(dateFrom, dateTo);
 
 		return {
@@ -191,6 +225,10 @@ export class ReportsService {
 		userId: string,
 		months: number = 6,
 	): Promise<TrendsReportDto> {
+		this.logger.debug(
+			`Generating trends report for userId: ${userId}, months: ${months}`,
+		);
+
 		const endDate = new Date();
 		const startDate = new Date();
 		startDate.setMonth(startDate.getMonth() - months + 1);
@@ -239,6 +277,10 @@ export class ReportsService {
 				expense: values.expense.toFixed(2),
 				balance: (values.income - values.expense).toFixed(2),
 			}));
+
+		this.logger.debug(
+			`Trends report generated - ${data.length} data points for ${months} months`,
+		);
 
 		return {
 			data,

@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Logger,
 	Param,
 	Post,
 	Put,
@@ -30,6 +31,8 @@ import { TransactionsService } from "./transactions.service";
 @ApiBearerAuth()
 @ApiExtraModels(CategoryResponseDto)
 export class TransactionsController {
+	private readonly logger = new Logger(TransactionsController.name);
+
 	constructor(private readonly transactionsService: TransactionsService) {}
 
 	@Post()
@@ -44,6 +47,9 @@ export class TransactionsController {
 		@Session() session: UserSession,
 		@Body() createTransactionDto: CreateTransactionDto,
 	) {
+		this.logger.debug(
+			`POST /transactions - userId: ${session.user.id}, type: ${createTransactionDto.type}, amount: ${createTransactionDto.amount}, categoryId: ${createTransactionDto.categoryId}`,
+		);
 		return this.transactionsService.create(
 			session.user.id,
 			createTransactionDto,
@@ -91,6 +97,13 @@ export class TransactionsController {
 		@Session() session: UserSession,
 		@Query() filters: FilterTransactionDto,
 	) {
+		const filterStr = Object.entries(filters || {})
+			.filter(([_, v]) => v !== undefined)
+			.map(([k, v]) => `${k}=${v}`)
+			.join(", ");
+		this.logger.debug(
+			`GET /transactions - userId: ${session.user.id}${filterStr ? `, filters: ${filterStr}` : ""}`,
+		);
 		return this.transactionsService.findAll(session.user.id, filters);
 	}
 
@@ -108,6 +121,9 @@ export class TransactionsController {
 	})
 	@ApiResponse({ status: 404, description: "Transação não encontrada" })
 	async findOne(@Param("id") id: string, @Session() session: UserSession) {
+		this.logger.debug(
+			`GET /transactions/${id} - userId: ${session.user.id}`,
+		);
 		return this.transactionsService.findOne(id, session.user.id);
 	}
 
@@ -130,6 +146,9 @@ export class TransactionsController {
 		@Session() session: UserSession,
 		@Body() updateTransactionDto: UpdateTransactionDto,
 	) {
+		this.logger.debug(
+			`PUT /transactions/${id} - userId: ${session.user.id}, fields: ${Object.keys(updateTransactionDto).join(", ")}`,
+		);
 		return this.transactionsService.update(
 			id,
 			session.user.id,
@@ -147,6 +166,9 @@ export class TransactionsController {
 	@ApiResponse({ status: 200, description: "Transação deletada com sucesso" })
 	@ApiResponse({ status: 404, description: "Transação não encontrada" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {
+		this.logger.debug(
+			`DELETE /transactions/${id} - userId: ${session.user.id}`,
+		);
 		return this.transactionsService.remove(id, session.user.id);
 	}
 }

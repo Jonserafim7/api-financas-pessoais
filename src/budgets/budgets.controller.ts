@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Logger,
 	Param,
 	Post,
 	Put,
@@ -24,6 +25,8 @@ import { UpdateBudgetDto } from "./dto/update-budget.dto";
 @ApiTags("Budgets")
 @ApiBearerAuth()
 export class BudgetsController {
+	private readonly logger = new Logger(BudgetsController.name);
+
 	constructor(private readonly budgetsService: BudgetsService) {}
 
 	@Post()
@@ -38,6 +41,9 @@ export class BudgetsController {
 		@Session() session: UserSession,
 		@Body() createBudgetDto: CreateBudgetDto,
 	) {
+		this.logger.debug(
+			`POST /budgets - userId: ${session.user.id}, period: ${createBudgetDto.period}, amount: ${createBudgetDto.amount}, categoryId: ${createBudgetDto.categoryId || "overall"}`,
+		);
 		return this.budgetsService.create(session.user.id, createBudgetDto);
 	}
 
@@ -49,6 +55,7 @@ export class BudgetsController {
 		type: [BudgetResponseDto],
 	})
 	async findAll(@Session() session: UserSession) {
+		this.logger.debug(`GET /budgets - userId: ${session.user.id}`);
 		return this.budgetsService.findAll(session.user.id);
 	}
 
@@ -66,6 +73,7 @@ export class BudgetsController {
 	})
 	@ApiResponse({ status: 404, description: "Orçamento não encontrado" })
 	async findOne(@Param("id") id: string, @Session() session: UserSession) {
+		this.logger.debug(`GET /budgets/${id} - userId: ${session.user.id}`);
 		return this.budgetsService.findOne(id, session.user.id);
 	}
 
@@ -88,6 +96,9 @@ export class BudgetsController {
 		@Session() session: UserSession,
 		@Body() updateBudgetDto: UpdateBudgetDto,
 	) {
+		this.logger.debug(
+			`PUT /budgets/${id} - userId: ${session.user.id}, fields: ${Object.keys(updateBudgetDto).join(", ")}`,
+		);
 		return this.budgetsService.update(id, session.user.id, updateBudgetDto);
 	}
 
@@ -101,6 +112,9 @@ export class BudgetsController {
 	@ApiResponse({ status: 200, description: "Orçamento deletado com sucesso" })
 	@ApiResponse({ status: 404, description: "Orçamento não encontrado" })
 	async remove(@Param("id") id: string, @Session() session: UserSession) {
+		this.logger.debug(
+			`DELETE /budgets/${id} - userId: ${session.user.id}`,
+		);
 		return this.budgetsService.remove(id, session.user.id);
 	}
 }
