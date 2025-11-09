@@ -40,8 +40,16 @@ async function bootstrap() {
 		jsonDocumentUrl: "api-json",
 	});
 
-	// Enable CORS to allow requests from different origins (frontend development)
-	app.enableCors();
+	// Enable CORS to allow requests from frontend (development and production)
+	app.enableCors({
+		origin: [
+			"http://localhost:5173", // Vite dev server (frontend dev)
+			"http://localhost:3001", // Create React App (alternative, if needed)
+			"http://localhost", // Nginx production
+			"http://localhost:80", // Nginx production (explicit)
+		],
+		credentials: true, // Allow cookies and auth headers
+	});
 
 	await app.listen(process.env.PORT ?? 3000);
 }
