@@ -16,6 +16,7 @@ export enum BudgetPeriod {
 
 export class CreateBudgetDto {
 	@ApiProperty({
+		type: String,
 		description: "ID da categoria (opcional para orçamento geral)",
 		example: "clyt5m3v90000jpf0z0z0z0z0",
 		required: false,
@@ -25,6 +26,7 @@ export class CreateBudgetDto {
 	categoryId?: string;
 
 	@ApiProperty({
+		type: Number,
 		description: "Valor do orçamento",
 		example: 1000.0,
 	})
@@ -41,6 +43,7 @@ export class CreateBudgetDto {
 	period: BudgetPeriod;
 
 	@ApiProperty({
+		type: String,
 		description: "Data de início do orçamento (ISO 8601)",
 		example: "2024-10-31T00:00:00Z",
 	})
@@ -48,6 +51,7 @@ export class CreateBudgetDto {
 	startDate: string;
 
 	@ApiProperty({
+		type: String,
 		description: "Data de término do orçamento (ISO 8601, opcional)",
 		example: "2025-10-31T00:00:00Z",
 		required: false,

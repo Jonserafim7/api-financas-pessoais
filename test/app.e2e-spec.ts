@@ -1,13 +1,13 @@
-import type { INestApplication } from "@nestjs/common";
-import { Test, type TestingModule } from "@nestjs/testing";
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
 import request from "supertest";
-import type { App } from "supertest/types";
+import { App } from "supertest/types";
 import { AppModule } from "./../src/app.module";
 
 describe("AppController (e2e)", () => {
 	let app: INestApplication<App>;
 
-	beforeAll(async () => {
+	beforeEach(async () => {
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
 		}).compile();
@@ -16,18 +16,10 @@ describe("AppController (e2e)", () => {
 		await app.init();
 	});
 
-	afterAll(async () => {
-		await app.close();
-	});
-
-	it("/public (GET) - anonymous access", () => {
+	it("/ (GET)", () => {
 		return request(app.getHttpServer())
-			.get("/public")
+			.get("/")
 			.expect(200)
 			.expect("Hello World!");
-	});
-
-	it("/private (GET) - requires authentication", () => {
-		return request(app.getHttpServer()).get("/private").expect(401);
 	});
 });

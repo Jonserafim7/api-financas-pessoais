@@ -1,7 +1,9 @@
 import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "../../generated/prisma/client";
+import { seedUserCategories } from "./seed-categories";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +14,7 @@ const prisma = new PrismaClient();
  * - Database: PostgreSQL via Prisma adapter
  * - Plugins: Expo plugin for mobile app authentication (appfinancaspessoais://)
  * - Trusted Origins: Mobile app and local development Expo server
+ * - Hooks: Seed default categories on user signup
  */
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
@@ -21,7 +24,7 @@ export const auth = betterAuth({
 	trustedOrigins: [
 		"http://localhost:3000",
 		"appfinancaspessoais://",
-		"exp://192.168.0.30:8081",
+		"exp://192.168.38.15:8081",
 	],
 	// Enable Expo plugin for React Native mobile support
 	plugins: [expo()],
@@ -29,9 +32,21 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 	},
-	user:{
-		changeEmail:{
+	user: {
+		changeEmail: {
 			enabled: true,
-		}
-	}
+		},
+	},
+	// Hooks: seed categories on successful signup
+	hooks: {
+		after: createAuthMiddleware(async (ctx) => {
+			// Only seed on sign-up endpoint
+			if (ctx.path.startsWith("/sign-up")) {
+				const session = ctx.context.newSession;
+				if (session?.user?.id) {
+					await seedUserCategories(session.user.id, prisma);
+				}
+			}
+		}),
+	},
 });

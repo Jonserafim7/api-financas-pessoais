@@ -1,22 +1,32 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Logger, Query } from "@nestjs/common";
 import {
 	ApiBearerAuth,
+	ApiExtraModels,
 	ApiOperation,
 	ApiQuery,
 	ApiResponse,
 	ApiTags,
 } from "@nestjs/swagger";
 import { Session, type UserSession } from "@thallesp/nestjs-better-auth";
-import { BudgetStatusReportDto } from "./dto/budget-status-report.dto";
-import { CategoryReportDto } from "./dto/category-report.dto";
+import {
+	BudgetStatusItemDto,
+	BudgetStatusReportDto,
+} from "./dto/budget-status-report.dto";
+import {
+	CategoryReportDto,
+	CategoryReportItemDto,
+} from "./dto/category-report.dto";
 import { SummaryReportDto } from "./dto/summary-report.dto";
-import { TrendsReportDto } from "./dto/trends-report.dto";
+import { TrendMonthDto, TrendsReportDto } from "./dto/trends-report.dto";
 import { ReportsService } from "./reports.service";
 
 @Controller("reports")
 @ApiTags("Reports")
 @ApiBearerAuth()
+@ApiExtraModels(CategoryReportItemDto, BudgetStatusItemDto, TrendMonthDto)
 export class ReportsController {
+	private readonly logger = new Logger(ReportsController.name);
+
 	constructor(private readonly reportsService: ReportsService) {}
 
 	@Get("summary")
@@ -41,6 +51,9 @@ export class ReportsController {
 		@Query("dateFrom") dateFrom?: string,
 		@Query("dateTo") dateTo?: string,
 	) {
+		this.logger.debug(
+			`GET /reports/summary - userId: ${session.user.id}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
 		return this.reportsService.getSummary(
 			session.user.id,
 			dateFrom ? new Date(dateFrom) : undefined,
@@ -70,6 +83,9 @@ export class ReportsController {
 		@Query("dateFrom") dateFrom?: string,
 		@Query("dateTo") dateTo?: string,
 	) {
+		this.logger.debug(
+			`GET /reports/by-category - userId: ${session.user.id}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
 		return this.reportsService.getByCategory(
 			session.user.id,
 			dateFrom ? new Date(dateFrom) : undefined,
@@ -99,6 +115,9 @@ export class ReportsController {
 		@Query("dateFrom") dateFrom?: string,
 		@Query("dateTo") dateTo?: string,
 	) {
+		this.logger.debug(
+			`GET /reports/budget-status - userId: ${session.user.id}, dateFrom: ${dateFrom || "undefined"}, dateTo: ${dateTo || "undefined"}`,
+		);
 		return this.reportsService.getBudgetStatus(
 			session.user.id,
 			dateFrom ? new Date(dateFrom) : undefined,
@@ -123,6 +142,9 @@ export class ReportsController {
 		@Query("months") months?: string,
 	) {
 		const monthsNum = months ? parseInt(months, 10) : 6;
+		this.logger.debug(
+			`GET /reports/trends - userId: ${session.user.id}, months: ${monthsNum}`,
+		);
 		return this.reportsService.getTrends(session.user.id, monthsNum);
 	}
 }
