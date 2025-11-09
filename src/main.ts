@@ -40,6 +40,9 @@ async function bootstrap() {
 		jsonDocumentUrl: "api-json",
 	});
 
+	// Enable CORS to allow requests from different origins (frontend development)
+	app.enableCors();
+
 	await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
