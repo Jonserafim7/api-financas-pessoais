@@ -24,7 +24,7 @@ export const auth = betterAuth({
 	trustedOrigins: [
 		"http://localhost:3000",
 		"appfinancaspessoais://",
-		"exp://192.168.0.30:8081",
+		"exp://192.168.38.15:8081",
 	],
 	// Enable Expo plugin for React Native mobile support
 	plugins: [expo()],
