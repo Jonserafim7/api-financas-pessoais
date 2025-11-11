@@ -65,9 +65,9 @@ services:
       dockerfile: Dockerfile
       # dockerfile: Nome do arquivo Dockerfile a ser usado
 
-      target: production
-      # target: Qual stage do multi-stage build usar (lembre-se: temos "builder" e "production")
-      # Usa apenas o stage "production", ignorando o "builder" na imagem final
+    command: sh -c "npx prisma migrate deploy && node dist/src/main.js"
+    # command: Sobrescreve o CMD do Dockerfile
+    # Executa migrations ANTES de iniciar a aplicação
 
     ports:
       - "3000:3000"
