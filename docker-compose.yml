@@ -103,6 +103,36 @@ services:
     # unless-stopped = Reinicia automaticamente se falhar, exceto se você parar manualmente
     # Útil para manter a aplicação rodando mesmo após crashes ou reinicialização do Docker
 
+  # ============================================================================
+  # SERVIÇO: WEB (React/Vite Application)
+  # Container da aplicação frontend React com Vite
+  # ============================================================================
+  web:
+    build:
+      context: ../web-financas-pessoais
+      # context: Diretório base para o build (../web-financas-pessoais = pasta do frontend)
+      # O Docker pode acessar todos os arquivos deste diretório (respeitando .dockerignore)
+
+      dockerfile: Dockerfile
+      # dockerfile: Nome do arquivo Dockerfile a ser usado
+
+    ports:
+      - "5173:5173"
+    # Mapeia porta 5173 do host → porta 5173 do container
+    # Permite acessar o frontend via http://localhost:5173
+
+    depends_on:
+      api:
+        condition: service_started
+    # depends_on: Define ordem de inicialização dos serviços
+    # condition: service_started = Só inicia o frontend DEPOIS que a API iniciar
+    # Previne erros de conexão à API durante startup do frontend
+
+    restart: unless-stopped
+    # restart: Define política de reinicialização do container
+    # unless-stopped = Reinicia automaticamente se falhar, exceto se você parar manualmente
+    # Útil para manter a aplicação rodando mesmo após crashes ou reinicialização do Docker
+
 # ==============================================================================
 # VOLUMES
 # Armazenamento persistente gerenciado pelo Docker
