@@ -17,12 +17,15 @@ const prisma = new PrismaClient();
  * - Hooks: Seed default categories on user signup
  */
 export const auth = betterAuth({
+	basePath: "/auth",
+	// Alinha o prefixo das rotas de autenticação com o front (sem "/api")
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
 	// Allow authentication from localhost, mobile app (appfinancaspessoais://), and local Expo development server
 	trustedOrigins: [
 		"http://localhost:3000",
+		"http://localhost:5173",
 		"appfinancaspessoais://",
 		"exp://192.168.38.15:8081",
 	],
