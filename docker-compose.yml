@@ -1,0 +1,148 @@
+# ==============================================================================
+# DOCKER COMPOSE - ORQUESTRAÇÃO DE CONTAINERS
+# Define e gerencia múltiplos containers como uma aplicação única
+# ==============================================================================
+
+services:
+  # ============================================================================
+  # SERVIÇO: DATABASE (PostgreSQL)
+  # Container do banco de dados PostgreSQL
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    # image: Usa uma imagem pronta do Docker Hub (não precisa de Dockerfile)
+    # postgres:16-alpine = PostgreSQL versão 16 na versão Alpine (apenas ~70MB)
+
+    ports:
+      - "5432:5432"
+    # ports: Mapeia portas entre host e container
+    # Formato: "PORTA_HOST:PORTA_CONTAINER"
+    # "5432:5432" = Porta 5432 do seu computador → Porta 5432 do container
+    # Permite conectar ao banco via localhost:5432 usando ferramentas externas (DBeaver, pgAdmin, etc.)
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-docker}
+      # Usuário do banco de dados (credencial de acesso)
+
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-docker}
+      # Senha do banco de dados (em produção use senha forte!)
+
+      POSTGRES_DB: ${POSTGRES_DB:-controle-financas-db}
+      # Nome do banco de dados que será criado automaticamente
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # volumes: Persiste dados fora do container (sobrevive a reinicializações)
+    # postgres_data = Nome do volume (definido no final do arquivo)
+    # /var/lib/postgresql/data = Onde o PostgreSQL guarda os dados dentro do container
+    # SEM VOLUME: Apagar o container = perder todos os dados!
+    # COM VOLUME: Apagar o container = dados preservados no volume
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docker -d controle-financas-db"]
+      # test: Comando para verificar se o banco está saudável
+      # pg_isready: Verifica se o PostgreSQL está aceitando conexões
+
+      interval: 10s
+      # interval: Testa a cada 10 segundos
+
+      timeout: 5s
+      # timeout: Considera falha se o teste demorar mais de 5 segundos
+
+      retries: 5
+      # retries: Tenta 5 vezes antes de considerar o container como unhealthy
+
+  # ============================================================================
+  # SERVIÇO: API (NestJS Application)
+  # Container da aplicação Node.js/NestJS
+  # ============================================================================
+  api:
+    build:
+      context: .
+      # context: Diretório base para o build (. = diretório atual)
+      # O Docker pode acessar todos os arquivos deste diretório (respeitando .dockerignore)
+
+      dockerfile: Dockerfile
+      # dockerfile: Nome do arquivo Dockerfile a ser usado
+
+    command: sh -c "npx prisma migrate deploy && node dist/src/main.js"
+    # command: Sobrescreve o CMD do Dockerfile
+    # Executa migrations ANTES de iniciar a aplicação
+
+    ports:
+      - "3000:3000"
+    # Mapeia porta 3000 do host → porta 3000 do container
+    # Permite acessar a API via http://localhost:3000
+
+    depends_on:
+      db:
+        condition: service_healthy
+    # depends_on: Define ordem de inicialização dos serviços
+    # condition: service_healthy = Só inicia a API DEPOIS que o banco passar no healthcheck
+    # Previne erros de conexão ao banco durante startup da API
+
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://docker:docker@db:5432/controle-financas-db?schema=public}
+      # URL de conexão ao banco de dados
+      # Formato: postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DB?schema=SCHEMA
+      # @db = Nome do serviço (Docker cria uma rede interna onde containers se comunicam por nome)
+
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET não definido}
+      # ${VARIAVEL}: Lê valor do arquivo .env do seu computador
+      # Chave secreta para assinar tokens de autenticação (JWT)
+
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      # ${VAR:-default}: Usa valor do .env OU valor padrão se não existir
+      # URL base da aplicação (usada para gerar links de callback, etc.)
+
+      PORT: ${PORT:-3000}
+      # Porta onde a aplicação NestJS irá escutar dentro do container
+
+    restart: unless-stopped
+    # restart: Define política de reinicialização do container
+    # unless-stopped = Reinicia automaticamente se falhar, exceto se você parar manualmente
+    # Útil para manter a aplicação rodando mesmo após crashes ou reinicialização do Docker
+
+  # ============================================================================
+  # SERVIÇO: WEB (React/Vite Application)
+  # Container da aplicação frontend React com Vite
+  # ============================================================================
+  web:
+    build:
+      context: ../web-financas-pessoais
+      # context: Diretório base para o build (../web-financas-pessoais = pasta do frontend)
+      # O Docker pode acessar todos os arquivos deste diretório (respeitando .dockerignore)
+
+      dockerfile: Dockerfile
+      # dockerfile: Nome do arquivo Dockerfile a ser usado
+
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+      # Usa o host localhost (porta 3000 mapeada) para que o navegador no host resolva a API corretamente
+
+    ports:
+      - "5173:5173"
+    # Mapeia porta 5173 do host → porta 5173 do container
+    # Permite acessar o frontend via http://localhost:5173
+
+    depends_on:
+      api:
+        condition: service_started
+    # depends_on: Define ordem de inicialização dos serviços
+    # condition: service_started = Só inicia o frontend DEPOIS que a API iniciar
+    # Previne erros de conexão à API durante startup do frontend
+
+    restart: unless-stopped
+    # restart: Define política de reinicialização do container
+    # unless-stopped = Reinicia automaticamente se falhar, exceto se você parar manualmente
+    # Útil para manter a aplicação rodando mesmo após crashes ou reinicialização do Docker
+
+# ==============================================================================
+# VOLUMES
+# Armazenamento persistente gerenciado pelo Docker
+# ==============================================================================
+volumes:
+  postgres_data:
+  # Define um volume nomeado chamado "postgres_data"
+  # Docker gerencia onde os dados ficam armazenados (geralmente em /var/lib/docker/volumes/)
+  # Dados sobrevivem a remoção de containers (só são apagados com "docker volume rm")

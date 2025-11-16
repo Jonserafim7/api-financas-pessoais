@@ -10,8 +10,8 @@ export class AppController {
 
 	@Get("/public")
 	@AllowAnonymous() // Allow anonymous access (no authentication required)
-	getHelloPublic(): string {
-		return this.appService.getHello();
+	getHelloPublic(): { message: string } {
+		return { message: this.appService.getHello() };
 	}
 
 	@Get("/private")

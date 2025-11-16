@@ -8,6 +8,7 @@ A personal finance management REST API built with NestJS. Track income, expenses
 - [Tech Stack](#tech-stack)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
+- [Running with Docker](#running-with-docker)
 - [API Documentation](#api-documentation)
 - [Testing with Postman](#testing-with-postman)
 - [Available Scripts](#available-scripts)
@@ -105,6 +106,57 @@ npm run start:dev
 ```
 
 Server starts at `http://localhost:3000`
+
+## Running with Docker
+
+### Prerequisites
+- Docker & Docker Compose installed
+
+### 1. Clone & Setup Environment
+
+```bash
+git clone <repository-url>
+cd api-financas-pessoais
+cp .env.example .env
+```
+
+Edit `.env` with required variables (see [Environment Variables](#environment-variables)).
+
+### 2. Start Application
+
+```bash
+# Build images and start containers (PostgreSQL + API)
+docker-compose up
+
+# Or run in detached mode (background)
+docker-compose up -d
+```
+
+The API will automatically:
+- Start PostgreSQL database
+- Run migrations (`prisma migrate deploy`)
+- Start NestJS application
+
+Access API at `http://localhost:3000`
+
+### 3. Seed Test Data (Optional)
+
+```bash
+# Run seed script inside the container
+docker-compose exec api npm run db:seed
+```
+
+**Test Credentials**: `joao@test.com` / `password123` or `maria@test.com` / `password123`
+
+### Useful Commands
+
+```bash
+docker-compose logs -f api      # View API logs
+docker-compose logs -f db       # View database logs
+docker-compose down             # Stop containers
+docker-compose down -v          # Stop & remove volumes (deletes data)
+docker-compose build --no-cache # Rebuild images from scratch
+```
 
 ## API Documentation
 
