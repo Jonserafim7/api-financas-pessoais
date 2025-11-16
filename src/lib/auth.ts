@@ -17,6 +17,8 @@ const prisma = new PrismaClient();
  * - Hooks: Seed default categories on user signup
  */
 export const auth = betterAuth({
+	basePath: "/auth",
+	// Alinha o prefixo das rotas de autenticação com o front (sem "/api")
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
