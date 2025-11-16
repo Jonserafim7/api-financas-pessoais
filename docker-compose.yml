@@ -21,13 +21,13 @@ services:
     # Permite conectar ao banco via localhost:5432 usando ferramentas externas (DBeaver, pgAdmin, etc.)
 
     environment:
-      POSTGRES_USER: docker
+      POSTGRES_USER: ${POSTGRES_USER:-docker}
       # Usuário do banco de dados (credencial de acesso)
 
-      POSTGRES_PASSWORD: docker
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-docker}
       # Senha do banco de dados (em produção use senha forte!)
 
-      POSTGRES_DB: controle-financas-db
+      POSTGRES_DB: ${POSTGRES_DB:-controle-financas-db}
       # Nome do banco de dados que será criado automaticamente
 
     volumes:
@@ -82,12 +82,12 @@ services:
     # Previne erros de conexão ao banco durante startup da API
 
     environment:
-      DATABASE_URL: postgresql://docker:docker@db:5432/controle-financas-db?schema=public
+      DATABASE_URL: ${DATABASE_URL:-postgresql://docker:docker@db:5432/controle-financas-db?schema=public}
       # URL de conexão ao banco de dados
       # Formato: postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DB?schema=SCHEMA
       # @db = Nome do serviço (Docker cria uma rede interna onde containers se comunicam por nome)
 
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET não definido}
       # ${VARIAVEL}: Lê valor do arquivo .env do seu computador
       # Chave secreta para assinar tokens de autenticação (JWT)
 
@@ -95,7 +95,7 @@ services:
       # ${VAR:-default}: Usa valor do .env OU valor padrão se não existir
       # URL base da aplicação (usada para gerar links de callback, etc.)
 
-      PORT: 3000
+      PORT: ${PORT:-3000}
       # Porta onde a aplicação NestJS irá escutar dentro do container
 
     restart: unless-stopped
@@ -117,7 +117,7 @@ services:
       # dockerfile: Nome do arquivo Dockerfile a ser usado
 
     environment:
-      VITE_API_URL: http://localhost:3000
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
       # Usa o host localhost (porta 3000 mapeada) para que o navegador no host resolva a API corretamente
 
     ports:
