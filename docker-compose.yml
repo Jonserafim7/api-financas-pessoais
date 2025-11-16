@@ -116,6 +116,11 @@ services:
       dockerfile: Dockerfile
       # dockerfile: Nome do arquivo Dockerfile a ser usado
 
+    environment:
+      VITE_API_URL: http://api:3000
+      # Expõe a URL da API para o Vite dentro do container
+      # Usa o hostname interno "api" da rede do Docker
+
     ports:
       - "5173:5173"
     # Mapeia porta 5173 do host → porta 5173 do container
