@@ -82,10 +82,11 @@ services:
     # Previne erros de conexão ao banco durante startup da API
 
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://docker:docker@db:5432/controle-financas-db?schema=public}
+      DATABASE_URL: postgresql://docker:docker@db:5432/controle-financas-db?schema=public
       # URL de conexão ao banco de dados
       # Formato: postgresql://USUARIO:SENHA@HOST:PORTA/NOME_DB?schema=SCHEMA
       # @db = Nome do serviço (Docker cria uma rede interna onde containers se comunicam por nome)
+      # IMPORTANTE: NÃO usar ${DATABASE_URL:-...} aqui! Isso leria o .env local com localhost
 
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET não definido}
       # ${VARIAVEL}: Lê valor do arquivo .env do seu computador
