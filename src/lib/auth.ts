@@ -28,6 +28,7 @@ export const auth = betterAuth({
     "http://localhost:5173",
     "appfinancaspessoais://",
     "exp://192.168.0.76:8081",
+    "http://localhost:8080",
   ],
   // Enable Expo plugin for React Native mobile support
   plugins: [expo()],
