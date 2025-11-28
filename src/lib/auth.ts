@@ -24,6 +24,7 @@ export const auth = betterAuth({
   }),
   // Allow authentication from localhost, mobile app (appfinancaspessoais://), and local Expo development server
   trustedOrigins: [
+    "http://localhost",
     "http://localhost:3000",
     "http://localhost:5173",
     "appfinancaspessoais://",
